@@ -1,0 +1,36 @@
+{
+  "id": "moread-office",
+  "name": "办公格式工具",
+  "version": "1.1.0",
+  "author": "MoRead",
+  "icon": "assets/icon.svg",
+  "description": "把 Word（.docx/.docm）导入为 Markdown，并把当前文档导出为 PDF；桌面端与 Android 通用。",
+  "entry": "index.js",
+  "permissions": ["file.read", "editor.insert", "export.pdf"],
+  "commands": [
+    {
+      "id": "import-docx",
+      "label": "导入 Word 文档…",
+      "icon": "file-down",
+      "group": "import",
+      "description": "选择 .docx / .docm 转换成 Markdown 并作为新文档打开；旧版 .doc 会提示另存为 .docx",
+      "script": "const file = await app.pickFile({ title: '导入 Word 文档', extensions: ['docx', 'docm', 'doc'] });\nif (!file) return;\nconst result = await app.importDocx(file.path);\nconst name = file.name.replace(/\\.(docx|docm)$/i, '') + '.md';\nawait app.createDocument(result.markdown, name);\nif (result.warnings && result.warnings.length) app.toast(result.warnings.join('；'));"
+    },
+    {
+      "id": "export-pdf",
+      "label": "导出 PDF…",
+      "icon": "printer",
+      "group": "export",
+      "description": "桌面端选择保存位置；Android 走系统打印面板，可存为 PDF",
+      "script": "await app.exportPdf();"
+    },
+    {
+      "id": "insert-divider",
+      "label": "插入分页线",
+      "icon": "minus",
+      "group": "tools",
+      "description": "在光标处插入一条水平分割线，演示工具类命令",
+      "script": "await app.insert('\\n\\n---\\n\\n');"
+    }
+  ]
+}

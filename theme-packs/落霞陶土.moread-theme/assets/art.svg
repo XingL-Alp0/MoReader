@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" width="1200" height="400" preserveAspectRatio="xMidYMid slice" role="img" aria-label="落霞 · 陶土 主页插画：落霞与沙丘">
+  <defs>
+
+<linearGradient id="sky" x1="0.2" y1="0" x2="0.1" y2="1">
+  <stop offset="0" stop-color="#120e0d"/>
+  <stop offset="0.5" stop-color="#35231c"/>
+  <stop offset="1" stop-color="#5b4d36"/>
+</linearGradient>
+<radialGradient id="sun" cx="0.5" cy="0.5" r="0.5">
+  <stop offset="0" stop-color="#f5dfb0"/>
+  <stop offset="0.52" stop-color="#eed4a1"/>
+  <stop offset="1" stop-color="#e9ae7b"/>
+</radialGradient>
+<filter id="heat" x="-25%" y="-60%" width="150%" height="220%"><feGaussianBlur stdDeviation="26"/></filter>
+<radialGradient id="vig" cx="0.5" cy="0.46" r="0.8"><stop offset="0.5" stop-color="#f0e6dd" stop-opacity="0"/><stop offset="1" stop-color="#f0e6dd" stop-opacity="0.18"/></radialGradient>
+
+  </defs>
+  <rect width="1200" height="400" fill="url(#sky)"/>
+  <circle cx="800" cy="292" r="180" fill="#ea8f6d" fill-opacity="0.16" filter="url(#heat)"/>
+  <circle cx="800" cy="296" r="84" fill="url(#sun)"/>
+  <path d="M852 118 q 6 -6 12 0 q 6 -6 12 0" fill="none" stroke="#120e0d" stroke-opacity="0.55" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M896 100 q 6 -6 12 0 q 6 -6 12 0" fill="none" stroke="#120e0d" stroke-opacity="0.55" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M936 124 q 6 -6 12 0 q 6 -6 12 0" fill="none" stroke="#120e0d" stroke-opacity="0.55" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M262 106 q 6 -6 12 0 q 6 -6 12 0" fill="none" stroke="#120e0d" stroke-opacity="0.55" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M306 124 q 6 -6 12 0 q 6 -6 12 0" fill="none" stroke="#120e0d" stroke-opacity="0.55" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M-40 312 C7 310 147 300 240 300 C333 300 427 312 520 312 C613 312 713 299 800 298 C887 297 967 307 1040 308 C1113 309 1207 303 1240 302 L1240 420 L-40 420 Z"
+        fill="#53352a"/>
+  <path d="M-40 356 C17 353 190 338 300 338 C410 338 513 356 620 356 C727 356 837 339 940 338 C1043 337 1190 346 1240 348 L1240 420 L-40 420 Z"
+        fill="#35231c"/>
+  <path d="M-40 392 C27 390 227 378 360 378 C493 378 633 392 760 392 C887 392 1040 378 1120 376 C1200 374 1220 381 1240 382 L1240 420 L-40 420 Z"
+        fill="#040303"/>
+  <rect width="1200" height="400" fill="url(#vig)"/>
+
+</svg>

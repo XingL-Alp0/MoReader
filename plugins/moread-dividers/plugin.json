@@ -1,0 +1,61 @@
+{
+  "id": "moread-dividers",
+  "name": "更多分割线",
+  "version": "1.0.0",
+  "author": "MoRead",
+  "icon": "assets/icon.svg",
+  "description": "给文档增加波浪、圆点、双线三种分割线，同时演示插件如何携带图片资源并用 {resource:key} 引用。",
+  "entry": "index.js",
+  "permissions": ["editor.insert"],
+  "resources": {
+    "wave": "assets/wave.svg",
+    "dots": "assets/dots.svg"
+  },
+  "elements": [
+    {
+      "name": "hr",
+      "label": "分割线",
+      "description": "按 style 渲染波浪 / 圆点 / 双线分隔线（wave、dots、double）",
+      "html": "<div class=\"moread-divider moread-divider-{style}\" aria-hidden=\"true\"></div>",
+      "css": ".moread-divider { height: 14px; margin: 20px 0; background-color: var(--accent, #c4562d); opacity: .75; -webkit-mask-position: center; -webkit-mask-repeat: repeat-x; -webkit-mask-size: auto 12px; mask-position: center; mask-repeat: repeat-x; mask-size: auto 12px; } .moread-divider-wave { -webkit-mask-image: url({resource:wave}); mask-image: url({resource:wave}); } .moread-divider-dots { -webkit-mask-image: url({resource:dots}); mask-image: url({resource:dots}); } .moread-divider-double { height: 0; background: transparent; border-top: 3px double var(--line, #d8cfc2); opacity: 1; -webkit-mask-image: none; mask-image: none; }",
+      "defaults": {
+        "style": "wave"
+      },
+      "fields": [
+        {
+          "key": "style",
+          "label": "样式",
+          "type": "select",
+          "options": [
+            { "value": "wave", "label": "波浪线" },
+            { "value": "dots", "label": "圆点线" },
+            { "value": "double", "label": "双线" }
+          ]
+        }
+      ]
+    }
+  ],
+  "buttons": [
+    {
+      "id": "insert-wave",
+      "label": "波浪分割线",
+      "icon": "≈",
+      "placement": "dock",
+      "script": "app.insert('\\n\\n[hr style=wave]\\n\\n')"
+    },
+    {
+      "id": "insert-dots",
+      "label": "圆点分割线",
+      "icon": "⋯",
+      "placement": "dock",
+      "script": "app.insert('\\n\\n[hr style=dots]\\n\\n')"
+    },
+    {
+      "id": "insert-double",
+      "label": "双线分割线",
+      "icon": "═",
+      "placement": "dock",
+      "script": "app.insert('\\n\\n[hr style=double]\\n\\n')"
+    }
+  ]
+}

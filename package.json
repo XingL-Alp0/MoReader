@@ -1,0 +1,121 @@
+{
+  "name": "moread",
+  "version": "1.0.3",
+  "description": "墨阅 MoRead — 一款专注、优雅的 Markdown 阅读与编辑器",
+  "main": "src/main/main.js",
+  "author": "MoRead",
+  "license": "GPL-3.0-only",
+  "private": true,
+  "scripts": {
+    "build:guides": "node scripts/build-guides.js",
+    "build:renderer": "esbuild src/renderer/app.js --bundle --outfile=dist/renderer.js --format=iife --platform=browser --target=chrome120 --sourcemap",
+    "build:vendor": "node scripts/copy-vendor.js",
+    "build": "npm run build:guides && npm run build:renderer && npm run build:vendor",
+    "start": "npm run build && electron .",
+    "test:plugins": "node scripts/test-plugins.js",
+    "test:docx": "node scripts/test-docx.js",
+    "test:host": "node scripts/test-plugin-host.js",
+    "test": "node scripts/test-plugins.js && node scripts/test-docx.js && node scripts/test-plugin-host.js",
+    "pack:plugin": "node scripts/pack-plugin.js",
+    "dev": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-dev.ps1",
+    "pack": "npm run build && electron-builder --win --dir",
+    "dist": "npm run build && electron-builder --win nsis",
+    "android:sync": "npm run build && npx cap sync android && node scripts/clean-android-assets.js",
+    "android:debug": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/android-debug.ps1",
+    "android:build": "npm run android:sync && cd android && gradlew.bat assembleDebug",
+    "android:release": "npm run android:sync && cd android && gradlew.bat assembleRelease && cd .. && node scripts/copy-android-apk.js",
+    "register": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/register-file-association.ps1"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/cli": "^8.6.0",
+    "@capacitor/clipboard": "^8.0.1",
+    "@capacitor/core": "^8.6.0",
+    "@capacitor/filesystem": "^8.1.5",
+    "@capacitor/preferences": "^8.0.1",
+    "@capacitor/share": "^8.0.3",
+    "@capacitor/status-bar": "^8.0.4",
+    "@codemirror/commands": "^6.8.1",
+    "@codemirror/lang-markdown": "^6.3.3",
+    "@codemirror/language": "^6.11.0",
+    "@codemirror/search": "^6.5.10",
+    "@codemirror/state": "^6.5.2",
+    "@codemirror/view": "^6.36.5",
+    "@lezer/highlight": "^1.2.1",
+    "dompurify": "^3.4.17",
+    "electron": "^45.2.3",
+    "electron-builder": "^26.0.12",
+    "esbuild": "^0.25.0",
+    "highlight.js": "^11.11.1",
+    "katex": "^0.19.1",
+    "markdown-it": "^14.1.0",
+    "markdown-it-footnote": "^4.0.0",
+    "markdown-it-task-lists": "^2.1.1",
+    "mermaid": "^12.3.0",
+    "turndown": "^7.2.5",
+    "turndown-plugin-gfm": "^1.0.2"
+  },
+  "build": {
+    "appId": "com.moread.markdown",
+    "productName": "MoRead",
+    "copyright": "Copyright © 2026 MoRead",
+    "asar": true,
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "src/main/**/*",
+      "src/shared/**/*",
+      "plugins/**/*",
+      "package.json",
+      "!**/*.map"
+    ],
+    "extraResources": [
+      {
+        "from": "assets",
+        "to": "assets"
+      },
+      {
+        "from": "scripts",
+        "to": "scripts",
+        "filter": [
+          "*.ps1"
+        ]
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.ico",
+      "artifactName": "MoRead-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "墨阅 MoRead",
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico",
+      "installerHeaderIcon": "assets/icon.ico",
+      "runAfterFinish": true,
+      "deleteAppDataOnUninstall": false,
+      "include": "build/installer.nsh",
+      "artifactName": "MoRead-Setup-${version}.${ext}"
+    }
+  },
+  "dependencies": {
+    "fflate": "^0.8.3"
+  }
+}

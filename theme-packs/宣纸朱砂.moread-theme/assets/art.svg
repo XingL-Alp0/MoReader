@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" width="1200" height="400" preserveAspectRatio="xMidYMid slice" role="img" aria-label="宣纸 · 朱砂 主页插画：宣纸与远山">
+  <defs>
+
+<linearGradient id="sky" x1="0.15" y1="0" x2="0.35" y2="1">
+  <stop offset="0" stop-color="#f3e7dc"/>
+  <stop offset="0.55" stop-color="#fdfaf3"/>
+  <stop offset="1" stop-color="#faf2eb"/>
+</linearGradient>
+<radialGradient id="halo" cx="0.5" cy="0.5" r="0.5">
+  <stop offset="0.42" stop-color="#b23a28" stop-opacity="0.26"/>
+  <stop offset="1" stop-color="#b23a28" stop-opacity="0"/>
+</radialGradient>
+<linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0" stop-color="#f7ebe3" stop-opacity="0.9"/>
+  <stop offset="1" stop-color="#fdfaf3" stop-opacity="0.3"/>
+</linearGradient>
+<filter id="haze" x="-25%" y="-60%" width="150%" height="220%"><feGaussianBlur stdDeviation="16"/></filter>
+<radialGradient id="vig" cx="0.5" cy="0.46" r="0.8"><stop offset="0.5" stop-color="#2c2419" stop-opacity="0"/><stop offset="1" stop-color="#2c2419" stop-opacity="0.09"/></radialGradient>
+
+  </defs>
+  <rect width="1200" height="400" fill="url(#sky)"/>
+  <circle cx="928" cy="118" r="110" fill="url(#halo)"/>
+  <circle cx="928" cy="118" r="38" fill="#b23a28" fill-opacity="0.92"/>
+  <circle cx="928" cy="118" r="54" fill="none" stroke="#b23a28" stroke-opacity="0.22" stroke-width="1.1"/>
+  <circle cx="928" cy="118" r="74" fill="none" stroke="#b23a28" stroke-opacity="0.09"/>
+  <path d="M-40 258 C-10 253 83 230 140 230 C197 230 252 261 300 256 C348 251 387 203 430 200 C473 197 515 241 560 240 C605 239 650 193 700 192 C750 191 808 232 860 234 C912 236 947 205 1010 206 C1073 207 1202 233 1240 238 L1240 420 L-40 420 Z"
+        fill="#2c2419" fill-opacity="0.11"/>
+  <path d="M-40 304 C-3 299 113 277 180 276 C247 275 303 304 360 300 C417 296 470 251 520 250 C570 249 610 293 660 292 C710 291 767 247 820 246 C873 245 930 285 980 288 C1030 291 1077 262 1120 262 C1163 262 1220 282 1240 286 L1240 420 L-40 420 Z"
+        fill="#2c2419" fill-opacity="0.19"/>
+  <ellipse cx="560" cy="308" rx="470" ry="16" fill="#fdfaf3" fill-opacity="0.7" filter="url(#haze)"/>
+  <path d="M-40 350 C3 346 143 329 220 328 C297 327 357 347 420 344 C483 341 540 311 600 310 C660 309 720 340 780 340 C840 340 903 313 960 312 C1017 311 1073 333 1120 336 C1167 339 1220 331 1240 330 L1240 420 L-40 420 Z"
+        fill="#2c2419" fill-opacity="0.30"/>
+  <rect y="346" width="1200" height="54" fill="url(#water)"/>
+  <path d="M150 356 q 36 -4 84 0" fill="none" stroke="#b23a28" stroke-opacity="0.22" stroke-width="1.1" stroke-linecap="round"/>
+  <path d="M420 368 q 36 -4 84 0" fill="none" stroke="#b23a28" stroke-opacity="0.16" stroke-width="1.1" stroke-linecap="round"/>
+  <path d="M700 360 q 36 -4 84 0" fill="none" stroke="#b23a28" stroke-opacity="0.2" stroke-width="1.1" stroke-linecap="round"/>
+  <path d="M930 376 q 36 -4 84 0" fill="none" stroke="#b23a28" stroke-opacity="0.13" stroke-width="1.1" stroke-linecap="round"/>
+  <path d="M818 158 q 6 -6 12 0 q 6 -6 12 0" fill="none" stroke="#2c2419" stroke-opacity="0.4" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M864 142 q 6 -6 12 0 q 6 -6 12 0" fill="none" stroke="#2c2419" stroke-opacity="0.4" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M906 164 q 6 -6 12 0 q 6 -6 12 0" fill="none" stroke="#2c2419" stroke-opacity="0.4" stroke-width="1.5" stroke-linecap="round"/>
+  <g transform="translate(96 78)">
+    <rect width="34" height="34" rx="3" fill="#b23a28"/>
+    <rect x="4.5" y="4.5" width="25" height="25" rx="1" fill="none" stroke="#fdfaf3" stroke-opacity="0.9" stroke-width="1.5"/>
+    <path d="M12 16 h11 M17.5 11 v11" stroke="#fdfaf3" stroke-opacity="0.85" stroke-width="1.7"/>
+  </g>
+  <rect width="1200" height="400" fill="url(#vig)"/>
+
+</svg>

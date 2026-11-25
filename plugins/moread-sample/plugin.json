@@ -1,0 +1,45 @@
+{
+  "id": "moread-sample",
+  "name": "示例插件 · 提示卡",
+  "version": "1.0.0",
+  "author": "MoRead",
+  "icon": "assets/icon.svg",
+  "description": "演示 Markdown 自定义元素与脚本按钮：在文档里插入提示卡，或插入当前日期。",
+  "entry": "index.js",
+  "permissions": ["editor.insert"],
+  "elements": [
+    {
+      "name": "note",
+      "label": "提示卡",
+      "description": "在正文中渲染一张带标题的提示卡",
+      "html": "<aside class=\"moread-sample-note\" style=\"border-left-color:{color}\"><strong>{title}</strong><p>{content}</p></aside>",
+      "css": ".moread-sample-note { margin: 12px 0; padding: 10px 14px; border-left: 4px solid #c4562d; background: rgba(196, 86, 45, 0.08); border-radius: 8px; } .moread-sample-note strong { display: block; margin-bottom: 4px; } .moread-sample-note p { margin: 0; color: var(--ink-soft); }",
+      "defaults": {
+        "title": "提示",
+        "content": "这是一条示例提示。",
+        "color": "#c4562d"
+      },
+      "fields": [
+        { "key": "title", "label": "标题", "type": "text", "placeholder": "提示卡标题" },
+        { "key": "content", "label": "内容", "type": "textarea", "placeholder": "写一段提示文字" },
+        { "key": "color", "label": "强调色", "type": "color" }
+      ]
+    }
+  ],
+  "buttons": [
+    {
+      "id": "insert-note",
+      "label": "插入提示卡",
+      "icon": "▣",
+      "placement": "dock",
+      "script": "app.insert('\\n[note title=\"示例提示\" content=\"这是由示例插件插入的提示卡。\"]\\n')"
+    },
+    {
+      "id": "insert-date",
+      "label": "插入日期",
+      "icon": "◷",
+      "placement": "dock",
+      "script": "app.insert(new Date().toLocaleDateString('zh-CN'))"
+    }
+  ]
+}

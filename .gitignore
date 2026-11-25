@@ -1,0 +1,71 @@
+# ============================================================
+# 墨阅 MoRead — 版本库忽略规则
+# 约定见 Agent.md：依赖、构建产物、打包产物、签名材料一律不入库
+# ============================================================
+
+# ---- 依赖与构建产物（Agent.md 明确不得入库）----
+node_modules/
+dist/
+release/
+screenshots/
+tmp/
+
+# ---- 日志 ----
+*.log
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ---- 操作系统 / 编辑器 ----
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+*.iml
+
+# ---- Electron / 打包缓存 ----
+out/
+.cache/
+*.tsbuildinfo
+
+# ---- Android / Capacitor 构建产物 ----
+android/.gradle/
+android/.kotlin/
+android/build/
+android/app/build/
+android/captures/
+android/local.properties
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor.config.json
+android/app/src/main/assets/capacitor.plugins.json
+android/app/src/main/res/xml/config.xml
+android/capacitor-cordova-android-plugins/
+
+# ---- 签名材料：绝不入库 ----
+android/keystore.properties
+*.jks
+*.keystore
+*.p12
+
+# ---- Python 生成脚本产物 ----
+__pycache__/
+*.pyc
+*.pyo
+
+# ---- 主题包套件：只保留脚本与成品 ZIP，构建/预览产物不入库 ----
+theme-packs/_palette-suite/_build/
+theme-packs/_palette-suite/_preview/
+
+# ---- Android 调试行为审计：Chromium profile 属本地状态 ----
+scripts/android-harness/profile/
+scripts/android-harness/store/
+
+# ---- 本地调试截图 ----
+/android-debug*.png
+
+# ---- 覆盖本文件自身的模板例外 ----
+!.gitignore

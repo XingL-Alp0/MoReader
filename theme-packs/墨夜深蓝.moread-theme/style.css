@@ -1,0 +1,247 @@
+/* ==========================================================================
+   墨夜 · 深蓝 — 墨阅主题包 · 样式层
+   深色 · 主强调 #7aa7f2 · 副强调 #e3b46e
+   组件颜色由 theme.json 写入；这里补齐组件颜色覆盖不到的变量与细节质感。
+   ========================================================================== */
+
+html[data-theme] {
+  color-scheme: dark;
+  --accent-contrast: #211c16 !important;
+  --line-strong: #545961;
+  --sidebar-deep: #05060a;
+  --green: #a2cdb8;
+  --blue: #a1bbd9;
+  --purple: #c5aed5;
+  --danger: #dd9792;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.34);
+  --shadow-md: 0 12px 34px rgba(0, 0, 0, 0.42);
+  --shadow-lg: 0 30px 90px rgba(0, 0, 0, 0.58);
+  --hl-keyword: #e194ad;
+  --hl-string: #93c8a5;
+  --hl-number: #e3b37d;
+  --hl-comment: #768193;
+  --hl-function: #94c7e1;
+  --hl-type: #c3a9da;
+  --hl-attr: #dec38c;
+  --hl-builtin: #8dd0d3;
+  --hl-meta: #b9a692;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 15px;
+}
+
+/* 顶栏与状态栏 -------------------------------------------------------------- */
+.titlebar {
+  border-bottom-color: color-mix(in srgb, var(--gold) 16%, var(--line-soft));
+  background-image: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent) 8%, transparent),
+    transparent 46%,
+    color-mix(in srgb, var(--gold) 6%, transparent)
+  );
+}
+
+.statusbar {
+  border-top-color: color-mix(in srgb, var(--accent) 16%, var(--line));
+  letter-spacing: 0.02em;
+}
+
+/* 欢迎页：一层纸纹 + 两团很淡的光 -------------------------------------------- */
+.welcome {
+  background-color: var(--surface);
+  background-image:
+    radial-gradient(
+      1100px 620px at 82% 12%,
+      color-mix(in srgb, var(--accent) 12%, transparent),
+      transparent 62%
+    ),
+    radial-gradient(
+      760px 460px at 8% 94%,
+      color-mix(in srgb, var(--gold) 8%, transparent),
+      transparent 68%
+    ),
+    url(assets/grain.svg);
+  background-repeat: no-repeat, no-repeat, repeat;
+  background-position: center, center, left top;
+  background-size: auto, auto, 180px 180px;
+}
+
+/* 标题 ---------------------------------------------------------------------- */
+.markdown-body h1 {
+  letter-spacing: 0.01em;
+}
+
+.markdown-body h1::after {
+  width: 46px;
+  background: linear-gradient(90deg, var(--accent), var(--gold));
+}
+
+.markdown-body h2 {
+  border-bottom-color: color-mix(in srgb, var(--gold) 16%, var(--line-soft));
+}
+
+.markdown-body h2::before {
+  content: "✦";
+  margin-right: 0.46em;
+  font-family: var(--font-ui);
+  font-size: 0.52em;
+  font-weight: 400;
+  color: var(--gold);
+  vertical-align: 0.3em;
+}
+
+/* 链接与引用 ---------------------------------------------------------------- */
+.markdown-body a {
+  border-bottom-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+.markdown-body a:hover {
+  color: var(--gold);
+  border-bottom-color: color-mix(in srgb, var(--gold) 70%, transparent);
+  background: color-mix(in srgb, var(--gold) 8%, transparent);
+}
+
+.markdown-body blockquote {
+  position: relative;
+  padding: 0.9em 1.3em;
+  border-left-width: 2px;
+  border-radius: 0 10px 10px 0;
+  background-image: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent) 12%, transparent),
+    transparent 72%
+  );
+}
+
+.markdown-body blockquote::after {
+  content: "☾";
+  position: absolute;
+  right: 12px;
+  top: 3px;
+  font-size: 24px;
+  line-height: 1;
+  color: color-mix(in srgb, var(--gold) 42%, transparent);
+  pointer-events: none;
+}
+
+/* 代码块 -------------------------------------------------------------------- */
+.markdown-body pre,
+.code-block {
+  border-color: color-mix(in srgb, var(--accent) 18%, var(--line));
+  border-radius: 10px;
+}
+
+.markdown-body pre {
+  box-shadow: 0 18px 42px -34px rgba(0, 0, 0, 0.85);
+}
+
+.code-head {
+  background-image: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent) 8%, transparent),
+    transparent 72%
+  );
+}
+
+.code-lang {
+  color: color-mix(in srgb, var(--gold) 80%, var(--muted));
+}
+
+.markdown-body code {
+  background-color: color-mix(in srgb, var(--accent) 8%, var(--code-bg));
+  border-color: color-mix(in srgb, var(--accent) 15%, var(--line-soft));
+}
+
+/* 表格 ---------------------------------------------------------------------- */
+.markdown-body table {
+  border-color: color-mix(in srgb, var(--accent) 15%, var(--line));
+  border-radius: 6px;
+}
+
+.markdown-body thead th {
+  color: color-mix(in srgb, var(--ink) 84%, var(--gold));
+  border-bottom-color: color-mix(in srgb, var(--gold) 22%, var(--line));
+}
+
+/* 分隔线与选中 -------------------------------------------------------------- */
+.markdown-body hr {
+  background: color-mix(in srgb, var(--gold) 24%, var(--line));
+}
+
+.markdown-body hr::after {
+  color: color-mix(in srgb, var(--gold) 60%, var(--faint));
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 34%, transparent);
+}
+
+/* 主按钮：强调色到副强调色 -------------------------------------------------- */
+.btn-primary {
+  background-image: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent) 88%, #ffffff) 0%,
+    var(--accent) 52%,
+    color-mix(in srgb, var(--accent) 74%, var(--gold)) 100%
+  );
+  box-shadow:
+    0 10px 26px -16px color-mix(in srgb, var(--accent) 85%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.btn-primary:hover {
+  background-image: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent) 80%, #ffffff) 0%,
+    var(--accent-strong) 55%,
+    color-mix(in srgb, var(--accent) 66%, var(--gold)) 100%
+  );
+}
+
+/* 自定义主页 ---------------------------------------------------------------- */
+.custom-home img {
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--gold) 20%, transparent);
+  box-shadow:
+    0 30px 64px -46px rgba(0, 0, 0, 0.9),
+    0 0 0 1px color-mix(in srgb, var(--ink) 4%, transparent);
+}
+
+.custom-home h1 + blockquote {
+  margin: 0.1em 0 1.5em;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-reading);
+  font-size: 1.08em;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  color: color-mix(in srgb, var(--ink-soft) 88%, var(--gold));
+}
+
+.custom-home h1 + blockquote::after {
+  content: none;
+}
+
+.custom-home p > em:only-child {
+  color: var(--muted);
+  font-size: 0.92em;
+}
+
+/* 滚动条 -------------------------------------------------------------------- */
+::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--accent) 24%, var(--line));
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in srgb, var(--accent) 42%, var(--line));
+}
+
+/* 星野：标题下划线带一点辉光 */
+.markdown-body h1::after {
+  box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+.code-head {
+  border-bottom-color: color-mix(in srgb, var(--accent) 14%, var(--line-soft));
+}

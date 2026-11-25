@@ -1,0 +1,971 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' file: data: blob: https: http:; font-src 'self' file: data:; connect-src 'self'; media-src 'self' file: data: blob: https: http:;"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>墨阅 MoRead</title>
+    <link rel="stylesheet" href="vendor/katex.min.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app" id="app">
+      <header class="titlebar" id="titlebar">
+        <div class="brand" id="brandBtn" role="button" tabindex="0" title="显示 / 隐藏侧栏 (Ctrl+Shift+B)" aria-label="显示或隐藏侧栏" aria-expanded="true">
+          <span class="brand-mark" id="brandIcon" aria-hidden="true"></span>
+          <div class="brand-text">
+            <span class="brand-name">墨阅</span>
+            <span class="brand-sub">MoRead</span>
+          </div>
+        </div>
+
+        <div class="window-title" id="windowTitle">未打开文档</div>
+
+        <div class="titlebar-actions">
+          <button class="icon-btn" id="homeBtn" title="主页 (Ctrl+Shift+H)" aria-label="主页" data-icon="home"></button>
+          <button class="icon-btn" id="themeToggle" title="切换主题" aria-label="切换主题" data-icon="sun"></button>
+          <button class="icon-btn" id="studioBtn" title="主题工作室" aria-label="主题工作室" data-icon="palette"></button>
+          <button class="icon-btn" id="helpBtn" title="帮助与快捷键" aria-label="帮助与快捷键" data-icon="keyboard"></button>
+          <button class="icon-btn" id="settingsBtn" title="设置" aria-label="设置" data-icon="settings"></button>
+          <button class="icon-btn" id="appMenuBtn" title="更多" aria-label="更多" aria-haspopup="menu" data-icon="more"></button>
+        </div>
+      </header>
+
+      <div class="shell">
+        <aside class="sidebar" id="sidebar">
+          <div class="sidebar-actions">
+            <button class="btn btn-primary" id="newDocBtn">
+              <span data-icon="plus"></span>
+              <span>新建文档</span>
+              <span class="shortcut-hint">Ctrl N</span>
+            </button>
+            <button class="btn btn-ghost" id="openDocBtn">
+              <span data-icon="folder"></span>
+              <span>打开</span>
+            </button>
+          </div>
+
+          <div class="sidebar-scroll">
+            <section class="side-section" id="recentSection">
+              <div class="section-heading">
+                <button class="section-toggle" type="button" data-section-toggle="recent" aria-expanded="true">
+                  <span class="section-chevron"></span>
+                  <span>最近打开</span>
+                </button>
+                <button class="text-btn" id="clearRecentBtn">清空</button>
+              </div>
+              <div class="recent-list" id="recentList"></div>
+            </section>
+
+            <section class="side-section" id="favoritesSection">
+              <div class="section-heading">
+                <button class="section-toggle" type="button" data-section-toggle="favorites" aria-expanded="true">
+                  <span class="section-chevron"></span>
+                  <span>收藏夹</span>
+                </button>
+                <span class="section-count" id="favoriteCount">0</span>
+              </div>
+              <div class="library-actions favorite-actions">
+                <button class="text-btn" id="addFavoriteBtn">收藏当前</button>
+                <button class="text-btn" id="addFavoritePathBtn">添加路径…</button>
+              </div>
+              <div class="library-list favorite-list" id="favoriteList"></div>
+            </section>
+
+            <section class="side-section" id="notesSection">
+              <div class="section-heading">
+                <button class="section-toggle" type="button" data-section-toggle="notes" aria-expanded="true">
+                  <span class="section-chevron"></span>
+                  <span>笔记夹</span>
+                </button>
+                <span class="section-count" id="noteCount">0</span>
+              </div>
+              <div class="library-actions">
+                <button class="text-btn" id="newNoteBtn">新建笔记</button>
+                <button class="text-btn" id="newNoteFolderBtn">新建文件夹</button>
+                <button class="text-btn" id="exportNotesBtn">导出 ZIP</button>
+              </div>
+              <div class="library-list note-list" id="noteList"></div>
+            </section>
+
+            <section class="side-section" id="outlineSection">
+              <div class="section-heading">
+                <button class="section-toggle" type="button" data-section-toggle="outline" aria-expanded="true">
+                  <span class="section-chevron"></span>
+                  <span>文档大纲</span>
+                </button>
+                <span class="section-count" id="outlineCount">0</span>
+              </div>
+              <div class="library-actions outline-actions">
+                <button class="text-btn" id="expandOutlineBtn">展开全部</button>
+                <button class="text-btn" id="collapseOutlineBtn">收起全部</button>
+              </div>
+              <div class="outline-list" id="outlineList"></div>
+            </section>
+          </div>
+
+          <div class="sidebar-footer">
+            <button class="assoc-badge" id="assocBadge">
+              <span class="assoc-indicator" id="assocIndicator"></span>
+              <span class="assoc-copy">
+                <strong id="assocTitle">.md 打开方式</strong>
+                <small id="assocSubtitle">点击关联墨阅</small>
+              </span>
+              <span class="assoc-arrow" data-icon="chevron-right"></span>
+            </button>
+            <div class="sidebar-version">MoRead <span id="sidebarVersion">1.0.0</span></div>
+          </div>
+        </aside>
+
+        <main class="workspace">
+          <div class="tabbar">
+            <div class="tabs" id="tabs"></div>
+            <div class="tabbar-actions">
+              <div class="view-switch" id="viewSwitch">
+                <button data-mode="read" title="阅读模式 (Ctrl+1)">
+                  <span data-icon="book"></span><span>阅读</span>
+                </button>
+                <button data-mode="split" title="分栏模式 (Ctrl+2)">
+                  <span data-icon="columns"></span><span>分栏</span>
+                </button>
+                <button data-mode="edit" title="编辑模式 (Ctrl+3)">
+                  <span data-icon="pencil"></span><span>编辑</span>
+                </button>
+                <button data-mode="visual" title="可视化编辑 (Ctrl+4)">
+                  <span data-icon="sparkles"></span><span>可视化</span>
+                </button>
+              </div>
+              <button class="icon-btn" id="moreBtn" title="更多操作" aria-label="更多操作" data-icon="more"></button>
+            </div>
+          </div>
+
+          <div class="format-bar" id="formatBar">
+            <span class="heading-select-wrap">
+              <select class="heading-select" id="headingSelect" title="段落级别">
+                <option value="0">正文</option>
+                <option value="1">标题 1</option>
+                <option value="2">标题 2</option>
+                <option value="3">标题 3</option>
+                <option value="4">标题 4</option>
+              </select>
+              <span class="heading-select-chevron" data-icon="chevron-down"></span>
+            </span>
+            <span class="format-sep"></span>
+            <button class="icon-btn fmt" data-format="bold" title="加粗 (Ctrl+B)" aria-label="加粗" data-icon="bold"></button>
+            <button class="icon-btn fmt" data-format="italic" title="斜体 (Ctrl+I)" aria-label="斜体" data-icon="italic"></button>
+            <button class="icon-btn fmt" data-format="strike" title="删除线" aria-label="删除线" data-icon="strike"></button>
+            <button class="icon-btn fmt" data-format="inlineCode" title="行内代码 (Ctrl+`)" aria-label="行内代码" data-icon="code"></button>
+            <button class="icon-btn fmt" data-format="link" title="链接 (Ctrl+K)" aria-label="链接" data-icon="link"></button>
+            <button class="icon-btn fmt" id="latexBtn" title="公式编辑器 (Ctrl+Shift+M)" aria-label="公式编辑器" data-icon="sigma"></button>
+            <span class="format-sep"></span>
+            <button class="icon-btn fmt" data-format="quote" title="引用" aria-label="引用" data-icon="quote"></button>
+            <button class="icon-btn fmt" data-format="ul" title="无序列表" aria-label="无序列表" data-icon="list"></button>
+            <button class="icon-btn" id="formatMoreBtn" title="格式菜单" aria-label="格式菜单" aria-haspopup="menu">
+              <span data-icon="more"></span>
+              <span class="format-more-label">格式</span>
+            </button>
+            <button class="icon-btn fmt" data-format="ol" title="有序列表" aria-label="有序列表" data-icon="list-ordered"></button>
+            <button class="icon-btn fmt" data-format="task" title="任务列表" aria-label="任务列表" data-icon="check-square"></button>
+            <button class="icon-btn fmt" data-format="table" title="插入表格" aria-label="插入表格" data-icon="table"></button>
+            <span class="format-sep"></span>
+            <button class="icon-btn fmt color-trigger" id="colorTrigger" title="文字颜色 / 高亮" aria-label="文字颜色">
+              <span class="color-dot" id="colorDot"></span>
+              <span data-icon="chevron-down" class="tiny-chevron"></span>
+            </button>
+            <button class="icon-btn fmt" id="undoBtn" title="撤销 (Ctrl+Z)" aria-label="撤销" data-icon="undo"></button>
+            <button class="icon-btn fmt" id="redoBtn" title="恢复 (Ctrl+Y)" aria-label="恢复" data-icon="redo"></button>
+            <span class="format-sep"></span>
+            <button class="icon-btn fmt" id="insertBtn" title="插入内容" aria-label="插入内容" data-icon="plus"></button>
+            <span class="format-sep" id="pluginMenuSep" hidden></span>
+            <span class="format-plugins" id="formatPlugins" hidden></span>
+            <button class="icon-btn fmt" id="pluginMenuBtn" title="插件" aria-label="插件" aria-haspopup="menu" hidden>
+              <span data-icon="plug"></span>
+              <span class="plugin-menu-label">插件</span>
+            </button>
+            <span class="format-spacer"></span>
+            <span class="save-state" id="saveState"><span class="save-dot"></span><span id="saveStateText">已保存</span></span>
+            <button class="icon-btn fmt" id="saveBtn" title="保存 (Ctrl+S)" aria-label="保存" data-icon="save"></button>
+          </div>
+
+          <div class="content" id="content">
+            <section class="welcome" id="welcome">
+              <div class="welcome-inner">
+                <div class="welcome-copy">
+                  <p class="eyebrow"><span></span>MARKDOWN READER &amp; EDITOR</p>
+                  <h1>把想法，<br /><em>写成 Markdown.</em></h1>
+                  <p class="lede">公式、代码、颜色与纸上的文字，<br class="wide-break" />都安静地待在这一个窗口里。</p>
+                  <div class="welcome-actions">
+                    <button class="btn btn-primary btn-large" id="welcomeNewBtn">
+                      <span data-icon="plus"></span>新建文档
+                    </button>
+                    <button class="btn btn-outline btn-large" id="welcomeOpenBtn">
+                      <span data-icon="folder"></span>打开文件
+                    </button>
+                  </div>
+                  <div class="welcome-plugin-actions" id="welcomePluginActions" hidden></div>
+                  <p class="welcome-hint">或将 <code>.md</code> 文件拖进窗口 · KaTeX 公式 · 语法高亮 · 取色器</p>
+                </div>
+
+                <div class="welcome-art" aria-hidden="true">
+                  <div class="art-paper">
+                    <div class="art-paper-head">
+                      <span class="art-dots"><i></i><i></i><i></i></span>
+                      <span>notes.md</span>
+                      <span class="art-badge">MD</span>
+                    </div>
+                    <div class="art-lines">
+                      <div class="art-line"><span class="ln">1</span><span class="tok-head"># 关于秋天的备忘</span></div>
+                      <div class="art-line"><span class="ln">2</span><span class="tok-plain">风从窗边经过，</span><span class="tok-em">很轻</span><span class="tok-plain">。</span></div>
+                      <div class="art-line"><span class="ln">3</span><span class="tok-key">```js</span></div>
+                      <div class="art-line"><span class="ln">4</span><span class="tok-key">const</span><span class="tok-plain"> mood = </span><span class="tok-str">'calm'</span><span class="tok-plain">;</span></div>
+                      <div class="art-line"><span class="ln">5</span><span class="tok-key">```</span></div>
+                      <div class="art-line"><span class="ln">6</span><span class="tok-math">$$ E = mc^2 $$</span></div>
+                    </div>
+                    <span class="art-caret"></span>
+                  </div>
+                  <div class="art-formula">∫<span>f(x) dx</span></div>
+                  <div class="art-color">
+                    <i style="--c:#c4562d"></i><i style="--c:#d9a441"></i><i style="--c:#4d7c5f"></i><i style="--c:#426b93"></i>
+                    <span>#C4562D</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="welcome-tiles">
+                <button class="welcome-tile" id="welcomeRecentBtn">
+                  <span class="tile-icon" data-icon="clock"></span>
+                  <span class="tile-copy">
+                    <strong>继续上次的阅读</strong>
+                    <small id="welcomeRecentText">还没有最近文档</small>
+                  </span>
+                  <span class="tile-arrow" data-icon="arrow-up-right"></span>
+                </button>
+                <button class="welcome-tile" id="welcomeAssocBtn">
+                  <span class="tile-icon" data-icon="file-check"></span>
+                  <span class="tile-copy">
+                    <strong>把 .md 交给墨阅</strong>
+                    <small id="welcomeAssocText">注册为默认打开方式</small>
+                  </span>
+                  <span class="tile-arrow" data-icon="arrow-up-right"></span>
+                </button>
+              </div>
+
+              <div class="custom-home markdown-body" id="customHome" hidden></div>
+            </section>
+
+            <section class="panes" id="panes" hidden>
+              <div class="editor-pane" id="editorPane">
+                <div class="editor-scroll-shadow"></div>
+                <div id="editorHost"></div>
+              </div>
+              <div class="splitter" id="splitter" title="拖动调整分栏宽度，双击复位"><span></span></div>
+              <div class="preview-pane" id="previewPane">
+                <article class="markdown-body" id="preview"></article>
+              </div>
+            </section>
+          </div>
+
+          <footer class="statusbar">
+            <div class="status-left">
+              <span id="wordCount">0 字</span>
+              <span class="status-sep"></span>
+              <span id="charCount">0 字符</span>
+              <span class="status-sep"></span>
+              <span id="readTime">约 1 分钟</span>
+            </div>
+            <div class="status-center" id="cursorInfo">第 1 行，第 1 列</div>
+            <div class="status-right">
+              <button class="status-btn" id="syncToggle" title="同步滚动">
+                <span data-icon="sync"></span><span id="syncText">同步</span>
+              </button>
+              <span class="status-sep"></span>
+              <span id="eolInfo">LF</span>
+              <span class="status-sep"></span>
+              <span id="encodingInfo">UTF-8</span>
+              <span class="status-sep"></span>
+              <span class="status-lang">Markdown</span>
+            </div>
+          </footer>
+        </main>
+      </div>
+    </div>
+
+    <div class="sticker-layer" id="stickerLayer" aria-hidden="true"></div>
+    <div class="custom-dock" id="customDock"></div>
+
+    <div class="drag-overlay" id="dragOverlay" hidden>
+      <div class="drop-target">
+        <span data-icon="file-down"></span>
+        <strong>松手，打开 Markdown</strong>
+        <small>支持 .md / .markdown / .mdown / .txt</small>
+      </div>
+    </div>
+
+    <div class="popover menu-popover" id="insertMenu" hidden>
+      <button data-insert-action="image"><span data-icon="image"></span>图片…</button>
+      <button data-insert-action="code"><span data-icon="file-code"></span>代码块…</button>
+      <button data-insert-action="math-inline"><span data-icon="sigma"></span>行内公式…（编辑器）</button>
+      <button data-insert-action="math-block"><span data-icon="sigma"></span>块级公式…（编辑器）</button>
+      <button data-insert-action="mermaid"><span data-icon="sparkles"></span>Mermaid 图表</button>
+      <button data-insert-action="link"><span data-icon="link"></span>链接…</button>
+      <div class="menu-sep"></div>
+      <button data-insert-action="table"><span data-icon="table"></span>表格</button>
+      <button data-insert-action="hr"><span data-icon="minus"></span>分割线</button>
+    </div>
+
+    <div class="popover menu-popover plugin-menu" id="pluginMenu" hidden></div>
+
+    <div class="popover menu-popover" id="moreMenu" hidden>
+      <button data-action="share"><span data-icon="share"></span>分享当前文档</button>
+      <div class="menu-sep"></div>
+      <div class="menu-plugin-group" id="morePluginImport" hidden></div>
+      <button data-action="export-html"><span data-icon="file-code"></span>导出 HTML</button>
+      <button data-action="export-pdf"><span data-icon="printer"></span>导出 PDF</button>
+      <button data-action="export-text"><span data-icon="file-text"></span>导出纯文本</button>
+      <div class="menu-plugin-group" id="morePluginExport" hidden></div>
+      <div class="menu-sep"></div>
+      <button data-action="reveal"><span data-icon="folder-open"></span>在文件夹中显示</button>
+      <button data-action="reload"><span data-icon="refresh"></span>从磁盘重新载入</button>
+      <div class="menu-plugin-group" id="morePluginTools" hidden></div>
+      <div class="menu-sep"></div>
+      <button data-action="save-as"><span data-icon="copy"></span>另存为…</button>
+    </div>
+
+    <div class="popover menu-popover" id="noteMenu" hidden></div>
+
+    <div class="popover menu-popover" id="appMenu" hidden>
+      <button data-app-action="studio"><span data-icon="palette"></span>主题工作室</button>
+      <button data-app-action="help"><span data-icon="keyboard"></span>帮助与快捷键</button>
+      <button data-app-action="settings"><span data-icon="settings"></span>设置</button>
+    </div>
+
+    <div class="popover menu-popover" id="formatMenu" hidden>
+      <button data-format-menu="bold"><span data-icon="bold"></span>加粗</button>
+      <button data-format-menu="italic"><span data-icon="italic"></span>斜体</button>
+      <button data-format-menu="strike"><span data-icon="strike"></span>删除线</button>
+      <button data-format-menu="inlineCode"><span data-icon="code"></span>行内代码</button>
+      <button data-format-menu="link"><span data-icon="link"></span>链接…</button>
+      <div class="menu-sep"></div>
+      <button data-format-menu="ul"><span data-icon="list"></span>无序列表</button>
+      <button data-format-menu="ol"><span data-icon="list-ordered"></span>有序列表</button>
+      <button data-format-menu="task"><span data-icon="check-square"></span>任务列表</button>
+      <button data-format-menu="quote"><span data-icon="quote"></span>引用</button>
+      <div class="menu-sep"></div>
+      <button data-format-menu="latex"><span data-icon="sigma"></span>公式编辑器</button>
+    </div>
+
+    <div class="popover color-popover" id="colorPopover" hidden>
+      <div class="popover-title">
+        <span>颜色</span>
+        <button class="icon-btn tiny" id="colorCloseBtn" data-icon="x" aria-label="关闭"></button>
+      </div>
+      <div class="color-tabs" id="colorTabs">
+        <button class="active" data-target="color">文字颜色</button>
+        <button data-target="background">文字高亮</button>
+      </div>
+      <div class="color-preview-row">
+        <span class="color-preview" id="colorPreview"></span>
+        <div class="color-values">
+          <input type="text" id="colorHex" value="#C4562D" spellcheck="false" aria-label="颜色值" />
+          <button class="icon-btn" id="eyedropperBtn" title="屏幕取色" aria-label="屏幕取色" data-icon="eyedropper"></button>
+        </div>
+      </div>
+      <div class="color-presets" id="colorPresets"></div>
+      <div class="color-native-row">
+        <label class="native-color-label">
+          <input type="color" id="colorInput" value="#c4562d" />
+          <span>更多颜色</span>
+        </label>
+        <button class="btn btn-primary btn-small" id="colorApplyBtn">应用</button>
+      </div>
+      <p class="popover-hint">选中文字后应用；不选中则插入示例文字。</p>
+    </div>
+
+    <dialog class="modal" id="settingsDialog">
+      <div class="modal-head">
+        <div>
+          <p class="modal-eyebrow">PREFERENCES</p>
+          <h2>设置</h2>
+        </div>
+        <button class="icon-btn" data-close="settingsDialog" data-icon="x" aria-label="关闭"></button>
+      </div>
+      <div class="modal-body settings-body">
+        <section class="settings-section">
+          <h3>外观</h3>
+          <div class="setting-row stack">
+            <div class="setting-label">
+              <strong>主题</strong>
+              <small>跟随系统，或固定为浅色 / 深色</small>
+            </div>
+            <div class="theme-options" id="themeOptions">
+              <button data-theme="light"><span class="theme-swatch theme-light"></span><span>浅色</span></button>
+              <button data-theme="dark"><span class="theme-swatch theme-dark"></span><span>深色</span></button>
+              <button data-theme="system"><span class="theme-swatch theme-system"></span><span>跟随系统</span></button>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-label">
+              <strong>编辑器字号</strong>
+              <small>预览字号会同步调整</small>
+            </div>
+            <div class="range-wrap">
+              <input type="range" id="fontSizeRange" min="13" max="21" step="1" value="15" />
+              <output id="fontSizeValue">15 px</output>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-label"><strong>自动换行</strong><small>长行不出现横向滚动条</small></div>
+            <label class="switch"><input type="checkbox" id="lineWrapToggle" /><span></span></label>
+          </div>
+        </section>
+
+        <section class="settings-section">
+          <h3>编辑与阅读</h3>
+          <div class="setting-row">
+            <div class="setting-label"><strong>同步滚动</strong><small>编辑器和预览保持同步位置</small></div>
+            <label class="switch"><input type="checkbox" id="syncToggleInput" /><span></span></label>
+          </div>
+          <div class="setting-row">
+            <div class="setting-label"><strong>自动保存</strong><small>停止输入 1.5 秒后保存已有文件</small></div>
+            <label class="switch"><input type="checkbox" id="autoSaveToggle" /><span></span></label>
+          </div>
+        </section>
+
+        <section class="settings-section">
+          <h3>默认打开方式</h3>
+          <div class="assoc-panel">
+            <div class="assoc-panel-head">
+              <span class="assoc-indicator" id="settingsAssocIndicator"></span>
+              <div>
+                <strong id="settingsAssocTitle">尚未关联</strong>
+                <small id="settingsAssocDesc">将 .md、.markdown、.mdown 注册到墨阅</small>
+              </div>
+            </div>
+            <div class="assoc-actions">
+              <button class="btn btn-outline btn-small" id="settingsRegisterBtn">注册为打开方式</button>
+              <button class="btn btn-ghost btn-small" id="settingsDefaultBtn">打开默认应用设置</button>
+            </div>
+            <p class="setting-note">Windows 10/11 会对默认应用做保护：注册完成后，在系统设置里选择「墨阅 MoRead」并设为默认。</p>
+          </div>
+        </section>
+
+        <section class="settings-section plugin-section">
+          <h3>插件管理</h3>
+          <p class="setting-note">插件是可执行本地代码的扩展：能增加 Markdown 自定义元素和脚本按钮，脚本按钮在被点击时可读写本机文件。只安装和启用可信来源的插件。</p>
+          <div class="plugin-toolbar" id="pluginToolbar">
+            <label class="plugin-search">
+              <span class="plugin-search-icon" data-icon="search" aria-hidden="true"></span>
+              <input id="pluginSearch" type="search" placeholder="搜索插件名称、作者或 ID" aria-label="搜索插件" autocomplete="off" spellcheck="false" />
+            </label>
+            <div class="plugin-filter" id="pluginFilter" role="group" aria-label="筛选插件">
+              <button type="button" data-filter="all" aria-pressed="true">全部</button>
+              <button type="button" data-filter="enabled" aria-pressed="false">已启用</button>
+              <button type="button" data-filter="disabled" aria-pressed="false">已停用</button>
+              <button type="button" data-filter="error" aria-pressed="false">异常</button>
+            </div>
+          </div>
+          <div class="plugin-actions">
+            <button class="btn btn-outline btn-small" id="installPluginBtn">安装插件（.zip）</button>
+            <button class="btn btn-ghost btn-small" id="reloadPluginsBtn">重新扫描插件</button>
+            <button class="btn btn-ghost btn-small" id="openPluginsFolderBtn">打开插件目录</button>
+          </div>
+          <div class="plugin-summary" id="pluginSummary" aria-live="polite"></div>
+          <div id="pluginList" class="plugin-list"><span class="studio-empty">正在加载插件…</span></div>
+        </section>
+
+        <section class="settings-section shortcuts-section">
+          <h3>快捷键</h3>
+          <div class="shortcut-grid">
+            <span>新建</span><kbd>Ctrl N</kbd>
+            <span>打开</span><kbd>Ctrl O</kbd>
+            <span>保存</span><kbd>Ctrl S</kbd>
+            <span>另存为</span><kbd>Ctrl Shift S</kbd>
+            <span>关闭标签</span><kbd>Ctrl W</kbd>
+            <span>查找</span><kbd>Ctrl F</kbd>
+            <span>加粗 / 斜体</span><kbd>Ctrl B / I</kbd>
+            <span>公式编辑器</span><kbd>Ctrl Shift M</kbd>
+            <span>主题工作室</span><kbd>Ctrl Shift ,</kbd>
+            <span>阅读 / 分栏 / 编辑 / 可视化</span><kbd>Ctrl 1 / 2 / 3 / 4</kbd>
+            <span>收起侧栏</span><kbd>Ctrl Shift B</kbd>
+            <span>显示主页</span><kbd>Ctrl Shift H</kbd>
+            <span>放大 / 缩小</span><kbd>Ctrl + / −</kbd>
+          </div>
+        </section>
+
+        <section class="settings-section about-section">
+          <div>
+            <strong>墨阅 MoRead</strong>
+            <small>版本 <span id="aboutVersion">1.0.0</span> · Electron <span id="electronVersion">—</span></small>
+          </div>
+          <button class="text-btn" id="openUserDataBtn">打开配置目录</button>
+        </section>
+      </div>
+      <div class="modal-foot">
+        <span class="modal-foot-note">设置会自动保存</span>
+        <button class="btn btn-primary btn-small" data-close="settingsDialog">完成</button>
+      </div>
+    </dialog>
+
+    <dialog class="modal help-modal" id="helpDialog">
+      <div class="modal-head">
+        <div>
+          <p class="modal-eyebrow">GUIDE</p>
+          <h2>帮助与快捷键</h2>
+        </div>
+        <button class="icon-btn" data-close="helpDialog" data-icon="x" aria-label="关闭"></button>
+      </div>
+      <div class="modal-body help-body">
+        <section class="help-section">
+          <h3>写作与阅读</h3>
+          <div class="shortcut-grid">
+            <span>新建 / 打开 / 保存</span><kbd>Ctrl N / O / S</kbd>
+            <span>另存为</span><kbd>Ctrl Shift S</kbd>
+            <span>关闭标签</span><kbd>Ctrl W</kbd>
+            <span>查找</span><kbd>Ctrl F</kbd>
+            <span>加粗 / 斜体</span><kbd>Ctrl B / I</kbd>
+            <span>链接 / 行内代码</span><kbd>Ctrl K / `</kbd>
+            <span>公式编辑器</span><kbd>Ctrl Shift M</kbd>
+            <span>阅读 / 分栏 / 编辑 / 可视化</span><kbd>Ctrl 1 / 2 / 3 / 4</kbd>
+            <span>收起侧栏</span><kbd>Ctrl Shift B</kbd>
+            <span>显示主页</span><kbd>Ctrl Shift H</kbd>
+          </div>
+        </section>
+        <section class="help-section">
+          <h3>显示与主题</h3>
+          <p class="help-copy">右上角调色板按钮打开主题工作室：自定义主/副强调色、软件图标、贴纸、自定义 JS 按钮、隐藏界面元素，还能写自定义主页和导入 CSS 样式包。整套主题可以导出为 <code>.zip</code> 主题包（含主页与图片），也可以直接把主题包或 CSS 拖进窗口导入。</p>
+        </section>
+        <section class="help-section">
+          <h3>Markdown 小抄</h3>
+          <div class="help-cheats">
+            <code># 标题</code><span>标题</span>
+            <code>**粗体**</code><span>加粗</span>
+            <code>`代码`</code><span>行内代码</span>
+            <code>$E=mc^2$</code><span>行内公式（双击公式可再次编辑）</span>
+            <code>$$...$$</code><span>块级公式</span>
+            <code>```html</code><span>HTML 代码块可点击「预览」</span>
+          </div>
+        </section>
+      </div>
+      <div class="modal-foot">
+        <span class="modal-foot-note">可视化模式：直接在渲染结果上编辑，再转回 Markdown。</span>
+        <button class="btn btn-primary btn-small" data-close="helpDialog">知道了</button>
+      </div>
+    </dialog>
+
+    <dialog class="modal studio-modal" id="studioDialog">
+      <div class="modal-head">
+        <div>
+          <p class="modal-eyebrow">THEME STUDIO</p>
+          <h2>主题工作室</h2>
+        </div>
+        <button class="icon-btn" data-close="studioDialog" data-icon="x" aria-label="关闭"></button>
+      </div>
+      <div class="studio-body">
+        <nav class="studio-tabs" id="studioTabs">
+          <button class="active" data-studio-tab="color"><span data-icon="palette"></span>色彩</button>
+          <button data-studio-tab="home"><span data-icon="home"></span>主页</button>
+          <button data-studio-tab="css"><span data-icon="code"></span>样式</button>
+          <button data-studio-tab="icon"><span data-icon="image"></span>图标</button>
+          <button data-studio-tab="stickers"><span data-icon="sticker"></span>贴纸</button>
+          <button data-studio-tab="buttons"><span data-icon="play"></span>按钮</button>
+          <button data-studio-tab="pack"><span data-icon="download"></span>主题包</button>
+          <button data-studio-tab="elements"><span data-icon="columns"></span>界面</button>
+        </nav>
+        <div class="studio-panels">
+          <section class="studio-panel" data-studio-panel="color">
+            <div class="studio-panel-head">
+              <h3>主题色调</h3>
+              <p>从主强调色与副强调色生成整套界面颜色，实时生效。</p>
+            </div>
+            <div class="studio-color-grid">
+              <div class="studio-color-card">
+                <span>主强调色</span>
+                <div class="studio-color-row">
+                  <input type="color" id="primaryColor" value="#c4562d" />
+                  <input type="text" id="primaryHex" value="#C4562D" spellcheck="false" />
+                </div>
+                <small>按钮、链接、选中态、标题装饰</small>
+              </div>
+              <div class="studio-color-card">
+                <span>副强调色</span>
+                <div class="studio-color-row">
+                  <input type="color" id="secondaryColor" value="#b4873b" />
+                  <input type="text" id="secondaryHex" value="#B4873B" spellcheck="false" />
+                </div>
+                <small>高亮、徽章、第二层强调</small>
+              </div>
+            </div>
+            <div class="studio-subhead">
+              <span>生成的色集</span>
+              <button class="text-btn" id="resetPaletteBtn">恢复默认</button>
+            </div>
+            <div class="generated-palette" id="generatedPalette"></div>
+            <div class="studio-subhead"><span>快速配色</span></div>
+            <div class="palette-presets" id="palettePresets"></div>
+            <div class="studio-subhead">
+              <span>组件颜色（单独覆盖）</span>
+              <span class="subhead-actions">
+                <button class="text-btn" id="generateComponentColorsBtn">从主题色生成</button>
+                <button class="text-btn" id="resetComponentColorsBtn">全部继承</button>
+              </span>
+            </div>
+            <p class="component-color-hint" id="componentColorState">不设置时跟随主题与主/副强调色自动生成；单独设置后该组件将使用自定义颜色。</p>
+            <div class="component-colors" id="componentColors"></div>
+          </section>
+
+          <section class="studio-panel" data-studio-panel="home" hidden>
+            <div class="studio-panel-head">
+              <h3>主页内容</h3>
+              <p>用 Markdown 替换欢迎页的内容：可以放标题、说明、图片、链接和公式。留空或关闭时显示默认主页。</p>
+            </div>
+            <label class="studio-toggle">
+              <input type="checkbox" id="homeEnabled" />
+              <span>使用自定义主页</span>
+            </label>
+            <div class="studio-subhead">
+              <span>主页 Markdown</span>
+              <span class="subhead-actions">
+                <button class="text-btn" id="homeImageBtn">插入图片</button>
+                <button class="text-btn" id="homeResetBtn">恢复默认</button>
+              </span>
+            </div>
+            <textarea class="studio-textarea studio-textarea-tall" id="homeMarkdown" spellcheck="false" placeholder="# 欢迎使用墨阅&#10;&#10;![](图片地址)&#10;&#10;支持完整 Markdown 语法。"></textarea>
+            <p class="setting-note">
+              图片建议用「插入图片」添加：文件会复制到墨阅的主题资源目录，导出主题包时一起打包。也可直接写 <code>https://</code> 图片地址。
+            </p>
+            <div class="studio-subhead"><span>效果预览</span></div>
+            <div class="home-preview markdown-body" id="homePreview"></div>
+          </section>
+
+          <section class="studio-panel" data-studio-panel="css" hidden>
+            <div class="studio-panel-head">
+              <h3>页面样式包</h3>
+              <p>导入一份 CSS，直接作用在墨阅界面上。适合调整圆角、阴影、间距，或做一整套视觉风格。</p>
+            </div>
+            <label class="studio-toggle">
+              <input type="checkbox" id="customCssEnabled" />
+              <span>启用样式包</span>
+            </label>
+            <div class="studio-subhead">
+              <span>CSS 内容</span>
+              <span class="subhead-actions">
+                <button class="text-btn" id="importCssBtn">导入 CSS 文件</button>
+                <button class="text-btn" id="clearCssBtn">清空</button>
+              </span>
+            </div>
+            <textarea class="studio-textarea studio-textarea-tall studio-code" id="customCss" spellcheck="false" placeholder=":root {&#10;  --radius-lg: 4px;&#10;}&#10;&#10;/* 例如隐藏状态栏 */&#10;.statusbar { display: none; }"></textarea>
+            <p class="setting-note">
+              样式会插到页面最后，优先级高于内置样式。CSS 里引用图片请用绝对路径或 <code>file://</code> 地址；受安全策略限制，<code>@import</code> 远程样式与远程字体会被拦截。
+            </p>
+            <p class="setting-note studio-warn">只导入可信来源的 CSS：样式可以隐藏按钮、遮挡界面。</p>
+          </section>
+
+          <section class="studio-panel" data-studio-panel="icon" hidden>
+            <div class="studio-panel-head">
+              <h3>软件图标</h3>
+              <p>更换标题栏图标与当前窗口图标。任务栏固定图标由安装包资源决定。</p>
+            </div>
+            <div class="brand-preview-row">
+              <span class="brand-preview" id="brandPreview"></span>
+              <div>
+                <strong>当前图标</strong>
+                <small>建议上传正方形 PNG / JPG / WebP，最大 1 MB。</small>
+              </div>
+            </div>
+            <div class="brand-preset-grid" id="brandPresetGrid"></div>
+            <div class="studio-inline-actions">
+              <button class="btn btn-outline btn-small" id="brandUploadBtn">上传图片</button>
+              <button class="btn btn-ghost btn-small" id="resetBrandBtn">恢复默认</button>
+              <input type="file" id="brandUploadInput" accept="image/png,image/jpeg,image/webp" hidden />
+            </div>
+          </section>
+
+          <section class="studio-panel" data-studio-panel="stickers" hidden>
+            <div class="studio-panel-head">
+              <h3>贴纸</h3>
+              <p>添加到界面上的装饰贴纸。添加后可直接拖动，双击贴纸删除。</p>
+            </div>
+            <div class="sticker-presets" id="stickerPresets"></div>
+            <div class="studio-inline-actions">
+              <button class="btn btn-outline btn-small" id="stickerUploadBtn">上传贴纸图片</button>
+              <input type="file" id="stickerUploadInput" accept="image/png,image/jpeg,image/webp" hidden />
+            </div>
+            <div class="sticker-list" id="stickerList"></div>
+          </section>
+
+          <section class="studio-panel" data-studio-panel="buttons" hidden>
+            <div class="studio-panel-head">
+              <h3>自定义按钮</h3>
+              <p>按钮会在右下角出现，点击时在当前窗口执行 JavaScript。只添加你信任的代码。</p>
+            </div>
+            <div class="custom-button-form">
+              <div class="custom-button-row">
+                <input id="customButtonLabel" type="text" placeholder="按钮名称，例如：插入日期" maxlength="30" />
+                <input id="customButtonIcon" type="text" placeholder="图标，例如 ✦ 或 ⏱" maxlength="4" />
+              </div>
+              <textarea id="customButtonScript" spellcheck="false" placeholder="// 例如：&#10;app.insert('\n\n> ' + new Date().toLocaleString('zh-CN'));"></textarea>
+              <div class="custom-button-actions">
+                <button class="text-btn" id="fillScriptExample">填入示例</button>
+                <span class="modal-foot-spacer"></span>
+                <button class="btn btn-primary btn-small" id="addCustomButtonBtn">添加按钮</button>
+              </div>
+            </div>
+            <div class="custom-button-list" id="customButtonList"></div>
+          </section>
+
+          <section class="studio-panel" data-studio-panel="pack" hidden>
+            <div class="studio-panel-head">
+              <h3>主题包库</h3>
+              <p>导入的主题会保存到本地库，可以随时切换、修改后覆盖更新，或者删除。每个主题包的主页与图片各自独立存放。</p>
+            </div>
+            <div class="studio-inline-actions">
+              <button class="btn btn-primary btn-small" id="importThemeBtn">导入主题包</button>
+              <button class="btn btn-outline btn-small" id="pasteThemeBtn">从剪贴板导入</button>
+              <button class="btn btn-outline btn-small" id="savePackBtn">把当前主题存为新的主题包</button>
+            </div>
+            <div class="theme-pack-library" id="themePackLibrary"></div>
+
+            <div class="studio-subhead">
+              <span>当前主题</span>
+              <span class="subhead-actions">
+                <button class="text-btn" id="exportThemeBtn">导出 .zip</button>
+                <button class="text-btn" id="copyThemeBtn">复制 JSON</button>
+              </span>
+            </div>
+            <div class="theme-pack-card">
+              <label class="theme-pack-field">
+                <span>主题名称</span>
+                <input type="text" id="themePackName" value="我的墨阅主题" maxlength="40" spellcheck="false" />
+              </label>
+              <div class="theme-pack-summary" id="themePackSummary"></div>
+              <p class="setting-note">
+                导出为 <code>*.moread-theme.zip</code>，内含 <code>theme.json</code>、<code>style.css</code>、<code>home.md</code> 和 <code>assets/</code> 图片；也兼容导入旧版 <code>.json</code> 主题包。切换主题包只影响外观，不会改动任何文档。
+              </p>
+            </div>
+            <div class="studio-subhead"><span>分享建议</span></div>
+            <ul class="theme-pack-tips">
+              <li>先点「从主题色生成」得到整套组件颜色，再保存/导出，换机后效果一致。</li>
+              <li>主页图片会复制到该主题包自己的资源目录，删除主题包时一并清理。</li>
+              <li>自定义按钮的 JavaScript、CSS 样式都会包含在主题包里，导入陌生主题包前请确认来源可信。</li>
+            </ul>
+          </section>
+
+          <section class="studio-panel" data-studio-panel="elements" hidden>
+            <div class="studio-panel-head">
+              <h3>界面元素</h3>
+              <p>隐藏不需要的界面元素，获得更专注的阅读空间。内容本身不会被隐藏。</p>
+            </div>
+            <div class="ui-elements-list" id="uiElementsList"></div>
+            <div class="studio-inline-actions">
+              <button class="btn btn-outline btn-small" id="showAllUiBtn">全部显示</button>
+              <button class="btn btn-ghost btn-small" id="focusUiBtn">专注阅读布局</button>
+            </div>
+          </section>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <span class="modal-foot-note" id="studioStatus">主题设置会自动保存</span>
+        <button class="btn btn-primary btn-small" data-close="studioDialog">完成</button>
+      </div>
+    </dialog>
+
+    <dialog class="modal input-modal" id="inputDialog">
+      <form method="dialog" id="inputForm">
+        <div class="modal-head">
+          <div>
+            <p class="modal-eyebrow">INSERT</p>
+            <h2 id="inputTitle">插入</h2>
+          </div>
+          <button class="icon-btn" type="button" data-close="inputDialog" data-icon="x" aria-label="关闭"></button>
+        </div>
+        <div class="modal-body input-body">
+          <label class="input-label" id="inputLabel" for="inputField">内容</label>
+          <input class="text-input" id="inputField" type="text" autocomplete="off" spellcheck="false" />
+          <p class="input-hint" id="inputHint"></p>
+        </div>
+        <div class="modal-foot">
+          <button class="btn btn-ghost btn-small" type="button" data-close="inputDialog">取消</button>
+          <button class="btn btn-primary btn-small" id="inputConfirm" type="submit">插入</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="modal input-modal plugin-element-modal" id="pluginElementDialog">
+      <div class="modal-head">
+        <div>
+          <p class="modal-eyebrow" id="pluginElementPlugin">PLUGIN ELEMENT</p>
+          <h2 id="pluginElementTitle">插入元素</h2>
+          <p class="plugin-element-sub" id="pluginElementSyntax"></p>
+        </div>
+        <button class="icon-btn" type="button" data-close="pluginElementDialog" data-icon="x" aria-label="关闭"></button>
+      </div>
+      <div class="modal-body input-body">
+        <div class="plugin-field-list" id="pluginElementFields"></div>
+      </div>
+      <div class="modal-foot">
+        <span class="modal-foot-spacer"></span>
+        <button class="btn btn-ghost btn-small" type="button" data-close="pluginElementDialog">取消</button>
+        <button class="btn btn-primary btn-small" id="pluginElementInsertBtn" type="button">插入</button>
+      </div>
+    </dialog>
+
+    <dialog class="modal latex-modal" id="latexDialog">
+      <div class="modal-head">
+        <div>
+          <p class="modal-eyebrow">LATEX EDITOR</p>
+          <h2>公式编辑器</h2>
+        </div>
+        <button class="icon-btn" type="button" data-close="latexDialog" data-icon="x" aria-label="关闭"></button>
+      </div>
+      <div class="latex-body">
+        <aside class="latex-palette">
+          <div class="latex-cats" id="latexCats"></div>
+          <div class="latex-symbols" id="latexSymbols"></div>
+        </aside>
+        <div class="latex-main">
+          <div class="latex-preview-wrap">
+            <div class="latex-preview" id="latexPreview"></div>
+            <p class="latex-error" id="latexError" hidden></p>
+          </div>
+          <div class="latex-source-row">
+            <textarea id="latexSource" spellcheck="false" placeholder="输入 LaTeX，例如 E = mc^2"></textarea>
+            <div class="latex-modes" id="latexModeSwitch">
+              <button type="button" class="active" data-latex-display="inline">行内</button>
+              <button type="button" data-latex-display="block">独立公式</button>
+            </div>
+          </div>
+          <div class="latex-templates" id="latexTemplates"></div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost btn-small" id="latexDeleteBtn" type="button" hidden>删除公式</button>
+        <button class="btn btn-ghost btn-small" id="latexCopyBtn" type="button">复制 LaTeX</button>
+        <span class="modal-foot-spacer"></span>
+        <span class="modal-foot-note" id="latexHint">点击左侧符号插入，Ctrl+Enter 确认</span>
+        <button class="btn btn-ghost btn-small" type="button" data-close="latexDialog">取消</button>
+        <button class="btn btn-primary btn-small" id="latexInsertBtn" type="button">插入</button>
+      </div>
+    </dialog>
+
+    <dialog class="modal mermaid-modal" id="mermaidDialog">
+      <div class="modal-head">
+        <div>
+          <p class="modal-eyebrow">DIAGRAM EDITOR</p>
+          <h2>图表编辑器</h2>
+        </div>
+        <button class="icon-btn" type="button" data-close="mermaidDialog" data-icon="x" aria-label="关闭"></button>
+      </div>
+      <div class="mermaid-body">
+        <div class="mermaid-tools">
+          <div class="mermaid-templates" id="mermaidTemplates"></div>
+          <div class="mermaid-themes" id="mermaidThemes"></div>
+          <span class="mermaid-theme-hint" id="mermaidThemeHint">配色跟随主题 › 组件颜色 · 图表主色 / 辅色</span>
+          <div class="mermaid-layouts" id="mermaidLayouts"></div>
+          <div class="mermaid-custom-colors" id="mermaidCustomColors" hidden>
+            <label title="主色"><input type="color" id="mermaidPrimaryColor" value="#c4562d" /></label>
+            <label title="辅色"><input type="color" id="mermaidSecondaryColor" value="#b4873b" /></label>
+            <span>仅此图表</span>
+          </div>
+        </div>
+        <div class="mermaid-split">
+          <section class="mermaid-editor">
+            <div class="mermaid-tabs" id="mermaidTabs">
+              <button type="button" class="active" data-mermaid-tab="structure">结构</button>
+              <button type="button" data-mermaid-tab="source">源码</button>
+            </div>
+            <div class="mermaid-panel" data-mermaid-panel="structure">
+              <p class="mermaid-notice" id="mermaidStructureNotice" hidden></p>
+              <div class="mermaid-structure" id="mermaidStructure"></div>
+              <div class="mermaid-structure-bar" id="mermaidStructureBar">
+                <button type="button" class="text-btn" data-mermaid-op="child">＋ 子项</button>
+                <button type="button" class="text-btn" data-mermaid-op="sibling">＋ 同级</button>
+                <button type="button" class="text-btn" data-mermaid-op="edge" hidden>＋ 连线</button>
+                <button type="button" class="text-btn" data-mermaid-op="outdent">← 提升</button>
+                <button type="button" class="text-btn" data-mermaid-op="indent">降级 →</button>
+                <button type="button" class="text-btn" data-mermaid-op="up">上移</button>
+                <button type="button" class="text-btn" data-mermaid-op="down">下移</button>
+                <select class="mermaid-shape-select" id="mermaidNodeShape" title="节点形状">
+                  <option value="plain">无边框</option>
+                  <option value="rounded">圆角</option>
+                  <option value="circle">圆形</option>
+                  <option value="square">方形</option>
+                  <option value="hexagon">六边形</option>
+                </select>
+                <button type="button" class="text-btn mermaid-danger" data-mermaid-op="delete">删除</button>
+              </div>
+            </div>
+            <div class="mermaid-panel" data-mermaid-panel="source" hidden>
+              <textarea id="mermaidSource" spellcheck="false"></textarea>
+            </div>
+          </section>
+          <section class="mermaid-preview-pane">
+            <div class="mermaid-preview" id="mermaidPreview"></div>
+            <p class="mermaid-error" id="mermaidEditorError" hidden></p>
+          </section>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost btn-small" id="mermaidDeleteBtn" type="button" hidden>删除图表</button>
+        <button class="btn btn-ghost btn-small" id="mermaidCopyBtn" type="button">复制源码</button>
+        <span class="modal-foot-spacer"></span>
+        <span class="modal-foot-note" id="mermaidHint">Ctrl+Enter 确认</span>
+        <button class="btn btn-ghost btn-small" type="button" data-close="mermaidDialog">取消</button>
+        <button class="btn btn-primary btn-small" id="mermaidApplyBtn" type="button">插入</button>
+      </div>
+    </dialog>
+
+    <dialog class="modal" id="confirmDialog">
+      <div class="confirm-top">
+        <span class="confirm-icon" id="confirmIcon" data-icon="alert"></span>
+        <div>
+          <h2 id="confirmTitle">保存更改？</h2>
+          <p id="confirmMessage">文档有未保存的更改。</p>
+          <pre id="confirmDetail" class="confirm-detail" hidden></pre>
+        </div>
+      </div>
+      <div class="modal-foot confirm-foot" id="confirmActions"></div>
+    </dialog>
+
+    <dialog class="modal" id="assocDialog">
+      <div class="modal-head">
+        <div>
+          <p class="modal-eyebrow">FILE ASSOCIATION</p>
+          <h2>让 .md 找到墨阅</h2>
+        </div>
+        <button class="icon-btn" data-close="assocDialog" data-icon="x" aria-label="关闭"></button>
+      </div>
+      <div class="modal-body assoc-body">
+        <p class="assoc-lede">把 Markdown 文件交给你常用的编辑器。关联是当前用户级别的，不需要管理员权限。</p>
+        <div class="assoc-status-card">
+          <div class="assoc-status-row">
+            <span class="assoc-indicator" id="assocDialogIndicator"></span>
+            <div>
+              <strong id="assocDialogTitle">检查中…</strong>
+              <small id="assocDialogDesc">正在读取当前关联状态</small>
+            </div>
+          </div>
+          <div class="assoc-exts">
+            <span>.md</span><span>.markdown</span><span>.mdown</span>
+          </div>
+        </div>
+        <ol class="assoc-steps">
+          <li><strong>注册</strong><span>写入当前用户的文件关联与「打开方式」。</span></li>
+          <li><strong>设为默认</strong><span>Windows 会打开系统设置，请选择「墨阅 MoRead」。</span></li>
+        </ol>
+        <p class="assoc-path" id="assocPath">—</p>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost btn-small" id="assocUnregisterBtn">取消关联</button>
+        <span class="modal-foot-spacer"></span>
+        <button class="btn btn-outline btn-small" id="assocRegisterBtn">注册为打开方式</button>
+        <button class="btn btn-primary btn-small" id="assocDefaultBtn">打开默认应用设置</button>
+      </div>
+    </dialog>
+
+    <div class="toast-stack" id="toastStack"></div>
+    <script src="renderer.js"></script>
+  </body>
+</html>
