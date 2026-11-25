@@ -91,6 +91,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-dev.ps1 -File 
 - 需要截图时优先用 CDP（`scripts/cdp-eval.js`）或者开发窗口，不要为了截图重装应用。
 - 保持文档源文件为纯 Markdown；不要引入私有格式。
 - 不要把 `node_modules/`、`dist/`、`release/`、`screenshots/`、`tmp/` 提交进版本库。
+- `plugins/` 同样不入库：插件只随 GitHub Release 分发，用 `npm run pack:plugin -- plugins/<id>`
+  打包成 `release/<id>-<version>.zip` 后上传到对应 release，不要把插件源码提交到仓库。
 - 用户没有明确要求时，不要删除已有的 `release/` 产物。
 
 ## 当前技术栈
