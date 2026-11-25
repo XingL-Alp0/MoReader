@@ -277,4 +277,14 @@
   - 桌面隔离实例（`--user-data-dir=tmp\en-desktop-profile`）：内置 `moread-en` 保持中文（避免默认改语言），卡片显示 2 个命令；执行 `English interface` 后侧栏英文，再执行 `切换为中文` 恢复中文。
   - 已知覆盖：文档正文、文件名、笔记名、应用内指南不翻译；主题包库、公式/Mermaid 编辑器里的部分长帮助文字仍可能为中文。
 
+## 检查更新与 v1.2.0 版本对齐
+
+- 新增 `src/shared/update-check.js`（纯逻辑，两端共用）：`apiCandidates()` 返回「代理优先、直连兜底」两个地址（`https://gh-proxy.com/` 前缀 + GitHub API）；`parseTag` 只认 `vX.Y.Z`；`compareVersions` 比前三段；`pickAsset` 按平台挑 `MoRead-Setup-*.exe` / `MoRead-Android-*.apk`（不会把 `.blockmap` 当安装包）；`buildDownloadUrls` 只用校验过的 tag 与产物名自己拼地址，**不采用**响应里的 `browser_download_url`，避免被代理改写到任意域名。
+- 桌面：新增 `app:check-update` IPC，在主进程用 `fetch`（8s 超时、AbortController）依次尝试两个地址；渲染层受 CSP `connect-src 'self'` 限制不能直连外网，所以请求必须留在主进程。`preload` 暴露 `checkUpdate()`。
+- Android：`MoReadFilesPlugin.httpGet` 新增只读 GET（仅 https、8s 超时、32MB 上限、独立线程执行后 resolve），`platform/android.js` 的 `checkUpdate()` 复用同一套 shared 判定，保证两端结果一致。
+- UI：「更多」菜单（`#appMenu`）新增「检查更新…」，用 `showConfirm` 呈现三态：检查失败 / 已是最新（`check` 图标）/ 发现新版本（展示 `当前 → 最新` 与安装包名，确认后 `api.openExternal` 打开代理下载链接）。
+- 版本：桌面与 Android 统一为 `1.2.0`（`package.json`；`android/app/build.gradle` 的 `versionCode 12` / `versionName "1.2.0"`）。
+- 文档同步：`README`（功能表 + 产物版本）、`docs/项目说明.md`（IPC 列表加 `app:check-update`）、`Agent.md`（版本表、发布顺序要求）。
+- 验证：新增 `scripts/test-update-check.js` 并接入 `npm test`（tag 解析、版本比较、产物挑选、地址拼接、恶意地址注入、畸形输入、平台隔离共 11 组断言）；对真实 release 冒烟：`gh-proxy.com` 827ms 返回 `v1.0.3`，win32 挑到 `MoRead-Setup-1.0.3.exe`、android 挑到 `MoRead-Android-1.1.0.apk`。
+
 

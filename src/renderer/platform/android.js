@@ -2,6 +2,7 @@ import pkg from "../../../package.json";
 import { strFromU8, strToU8, unzipSync, zipSync } from "fflate";
 import { createAndroidPluginHost } from "../plugins/android-host.js";
 import { convertDocumentXml } from "../../shared/docx-markdown.js";
+import { apiCandidates, normalizeRelease } from "../../shared/update-check.js";
 
 const SETTINGS_KEY = "moread.settings";
 const MAX_PICK_BYTES = 25 * 1024 * 1024;
@@ -426,6 +427,31 @@ export function createAndroidApi() {
         userData: "",
         documents: ""
       };
+    },
+
+    /* 检查更新：网络请求交给原生 httpGet（WebView 受 CSP 限制不能直连），
+       版本比较与地址拼接复用 shared/update-check，与桌面端保持同一套判定。 */
+    async checkUpdate() {
+      const bridge = pluginOrNull();
+      if (!bridge?.httpGet) {
+        return { ok: false, currentVersion: pkg.version, error: "当前安装包不支持检查更新" };
+      }
+      let lastError = "";
+      for (const url of apiCandidates()) {
+        try {
+          const response = await bridge.httpGet({ url, timeoutMs: 8000 });
+          const status = Number(response?.status) || 0;
+          if (status < 200 || status >= 300) {
+            lastError = `HTTP ${status}`;
+            continue;
+          }
+          const release = JSON.parse(String(response.body || ""));
+          return normalizeRelease(release, pkg.version, "android");
+        } catch (error) {
+          lastError = error?.message || String(error);
+        }
+      }
+      return { ok: false, currentVersion: pkg.version, error: lastError || "无法连接更新服务" };
     },
 
     async getSettings() {

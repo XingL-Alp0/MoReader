@@ -9056,6 +9056,61 @@ function runAppAction(action) {
   if (action === "studio") $("#studioBtn").click();
   if (action === "help") $("#helpBtn").click();
   if (action === "settings") $("#settingsBtn").click();
+  if (action === "check-update") checkForUpdates();
+}
+
+/* 检查更新：只读取 release 元数据并给出下载入口，不自动下载、不执行远端内容。
+   桌面走主进程 IPC（渲染层受 CSP connect-src 'self' 限制），Android 走原生 httpGet。 */
+async function checkForUpdates() {
+  let result = null;
+  try {
+    result = await api.checkUpdate();
+  } catch (error) {
+    result = { ok: false, error: error?.message || String(error) };
+  }
+  if (!result || result.ok === false) {
+    await showConfirm({
+      title: "检查更新失败",
+      message: "无法获取版本信息，请检查网络后重试。",
+      detail: result?.error || "",
+      icon: "alert",
+      buttons: [{ id: "ok", label: "知道了", variant: "primary" }]
+    });
+    return;
+  }
+  if (!result.updateAvailable) {
+    await showConfirm({
+      title: "已是最新版本",
+      message: `当前版本 ${result.currentVersion}`,
+      detail: result.latestTag ? `最新发布：${result.latestTag}` : "",
+      icon: "check",
+      buttons: [{ id: "ok", label: "好", variant: "primary" }]
+    });
+    return;
+  }
+  const choice = await showConfirm({
+    title: "发现新版本",
+    message: `${result.currentVersion} → ${result.latestVersion}`,
+    detail: result.assetName
+      ? `安装包：${result.assetName}`
+      : "该版本未提供本平台安装包，可打开发布页查看。",
+    icon: "download",
+    buttons: [
+      { id: "later", label: "稍后", variant: "ghost" },
+      { id: "open", label: "前往下载", variant: "primary" }
+    ]
+  });
+  if (choice !== "open") return;
+  const url = result.downloadUrl || result.downloadUrlDirect || result.pageUrl;
+  if (!url) {
+    toast("没有可用的下载地址", { type: "error" });
+    return;
+  }
+  try {
+    await api.openExternal(url);
+  } catch {
+    toast("无法打开下载链接", { type: "error" });
+  }
 }
 
 function openFormatMenu() {

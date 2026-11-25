@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -430,6 +432,60 @@ public class MoReadFilesPlugin extends Plugin {
         } catch (Exception error) {
             call.reject("无法打开链接：" + error.getMessage());
         }
+    }
+
+    /**
+     * 检查更新用的只读 GET。WebView 受 CSP `connect-src 'self'` 限制不能直连外网，
+     * 所以把请求放到原生侧；只允许 https，且限制响应体积，避免被远端拖垮。
+     */
+    @PluginMethod
+    public void httpGet(PluginCall call) {
+        String url = call.getString("url", "");
+        if (url.isEmpty()) {
+            call.reject("缺少链接");
+            return;
+        }
+        if (!url.startsWith("https://")) {
+            call.reject("只允许 https 链接");
+            return;
+        }
+        Integer requested = call.getInt("timeoutMs", 8000);
+        final int timeoutMs = Math.max(1000, requested == null ? 8000 : requested);
+        final String target = url;
+        new Thread(() -> {
+            HttpURLConnection connection = null;
+            try {
+                connection = (HttpURLConnection) new URL(target).openConnection();
+                connection.setConnectTimeout(timeoutMs);
+                connection.setReadTimeout(timeoutMs);
+                connection.setInstanceFollowRedirects(true);
+                connection.setRequestProperty("Accept", "application/vnd.github+json");
+                connection.setRequestProperty("User-Agent", "MoRead-UpdateCheck");
+                int status = connection.getResponseCode();
+                InputStream stream = status >= 400 ? connection.getErrorStream() : connection.getInputStream();
+                ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                if (stream != null) {
+                    byte[] chunk = new byte[8192];
+                    int read;
+                    long total = 0L;
+                    while ((read = stream.read(chunk)) != -1) {
+                        total += read;
+                        if (total > MAX_BYTES) throw new IOException("响应超过上限");
+                        buffer.write(chunk, 0, read);
+                    }
+                    stream.close();
+                }
+                JSObject ret = new JSObject();
+                ret.put("status", status);
+                ret.put("body", buffer.toString(StandardCharsets.UTF_8.name()));
+                call.resolve(ret);
+            } catch (Exception error) {
+                String message = error.getMessage() == null ? error.toString() : error.getMessage();
+                call.reject("请求失败：" + message);
+            } finally {
+                if (connection != null) connection.disconnect();
+            }
+        }, "moread-update-check").start();
     }
 
     @PluginMethod

@@ -1,6 +1,6 @@
 {
   "name": "moread",
-  "version": "1.0.3",
+  "version": "1.2.0",
   "description": "墨阅 MoRead — 一款专注、优雅的 Markdown 阅读与编辑器",
   "main": "src/main/main.js",
   "author": "MoRead",
@@ -15,7 +15,8 @@
     "test:plugins": "node scripts/test-plugins.js",
     "test:docx": "node scripts/test-docx.js",
     "test:host": "node scripts/test-plugin-host.js",
-    "test": "node scripts/test-plugins.js && node scripts/test-docx.js && node scripts/test-plugin-host.js",
+    "test:update": "node scripts/test-update-check.js",
+    "test": "node scripts/test-plugins.js && node scripts/test-docx.js && node scripts/test-plugin-host.js && node scripts/test-update-check.js",
     "pack:plugin": "node scripts/pack-plugin.js",
     "dev": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-dev.ps1",
     "pack": "npm run build && electron-builder --win --dir",

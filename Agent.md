@@ -24,8 +24,8 @@
 
 | 位置 | 字段 | 记录值 |
 | --- | --- | --- |
-| `package.json` | `version` | `1.0.3` |
-| `android/app/build.gradle` | `versionName` / `versionCode` | `1.1.0` / `11` |
+| `package.json` | `version` | `1.2.0` |
+| `android/app/build.gradle` | `versionName` / `versionCode` | `1.2.0` / `12` |
 | `plugins/moread-office/plugin.json` | `version` | `1.1.0` |
 | `plugins/moread-dividers/plugin.json` | `version` | `1.0.0` |
 | `plugins/moread-sample/plugin.json` | `version` | `1.0.0` |
@@ -34,8 +34,10 @@
   - 产物文件名：`release/MoRead-Setup-<version>.exe`、`release/MoRead-Android-<version>.apk`
   - git tag 与 GitHub Release 的 tag：`v<version>`
 - `versionCode` 必须**单调递增**（Android 覆盖安装的唯一判据），即使 `versionName` 不变也不能改小或重复。
-- 现状是历史遗留的不一致（桌面 `1.0.3`，Android 与 office 插件 `1.1.0`），只作记录、不追溯重打包；
-  下次打包以 `package.json` 的目标版本为准，把 Android、插件、产物文件名与 tag 一并改到同一版本。
+- 桌面端与 Android 端必须同版本（`1.2.0` 起已对齐，Android 的 `appInfo()` 读的也是 `package.json` 的
+  `version`）；插件版本独立演进，但要在同一批 release 里发布，文件名固定为 `<id>-<version>.zip`。
+- 「检查更新」读的是 GitHub Releases 的 `latest`，因此发布顺序必须是：先推代码与 tag，再发正式 release，
+  否则客户端查不到新版本（草稿与预发布不参与 `latest`）。
 
 ## 启动测试脚本
 

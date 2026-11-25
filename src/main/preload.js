@@ -23,6 +23,7 @@ contextBridge.exposeInMainWorld('moread', {
     node: process.versions.node
   },
   appInfo: () => ipcRenderer.invoke('app:info'),
+  checkUpdate: () => ipcRenderer.invoke('app:check-update'),
   plugins: {
     list: () => ipcRenderer.invoke('plugins:list'),
     reload: () => ipcRenderer.invoke('plugins:reload'),

@@ -12,6 +12,7 @@ const { PluginManager } = require('./plugins');
 const { writeZip, readZip } = require('./zip');
 const { docxToMarkdown } = require('./docx');
 const associations = require('./associations');
+const { apiCandidates, normalizeRelease } = require('../shared/update-check');
 
 const APP_NAME = '墨阅 MoRead';
 const MAX_FILE_BYTES = 25 * 1024 * 1024;
@@ -237,6 +238,43 @@ function isSafeExternal(url) {
   }
 }
 
+/* 检查更新只读取 release 元数据，不下载、也不执行任何远端内容。
+   渲染层受 CSP `connect-src 'self'` 限制，所以网络请求必须放在主进程。 */
+const UPDATE_TIMEOUT_MS = 8000;
+
+async function fetchJsonWithTimeout(url, timeoutMs = UPDATE_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        Accept: 'application/vnd.github+json',
+        'User-Agent': 'MoRead-UpdateCheck'
+      }
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return await response.json();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/** 依次尝试代理与直连，任一成功即返回；全部失败时给出最后一次错误。 */
+async function checkForUpdates() {
+  const currentVersion = app.getVersion();
+  let lastError = '';
+  for (const url of apiCandidates()) {
+    try {
+      const release = await fetchJsonWithTimeout(url);
+      return normalizeRelease(release, currentVersion, process.platform);
+    } catch (error) {
+      lastError = error?.name === 'AbortError' ? '请求超时' : error?.message || String(error);
+    }
+  }
+  return { ok: false, currentVersion, error: lastError || '无法连接更新服务' };
+}
+
 async function bootstrap() {
   store = new Store(app.getPath('userData'));
   pluginManager = new PluginManager({ appPath: app.getAppPath(), userData: app.getPath('userData'), store });
@@ -421,6 +459,8 @@ function registerIpc() {
     userData: app.getPath('userData'),
     documents: app.getPath('documents')
   }));
+
+  ipcMain.handle('app:check-update', () => checkForUpdates());
 
   ipcMain.handle('app:renderer-ready', () => {
     rendererReady = true;

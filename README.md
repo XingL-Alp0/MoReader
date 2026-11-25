@@ -31,6 +31,8 @@
 - **文档大纲**：自动提取标题，点击跳转
 - **导出**：HTML、PDF、纯文本
 - **主题**：浅色、深色、跟随系统
+- **检查更新**：更多菜单一键查询 GitHub Releases，默认经 `gh-proxy.com` 加速、失败再直连；
+  只给出安装包下载链接，不自动下载、不自动安装
 - 单实例运行：双击另一个 Markdown 文件会送到已打开的窗口
 
 ![分栏阅读与公式](docs/screenshots/split.png)
@@ -67,7 +69,7 @@ npm run dist
 输出：
 
 ```text
-release/MoRead-Setup-1.0.3.exe
+release/MoRead-Setup-1.2.0.exe
 release/win-unpacked/MoRead.exe
 ```
 
@@ -109,7 +111,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\register-file-associ
 桌面版与 Android 版共用同一套渲染层，通过 `src/renderer/platform/` 适配 `window.moread`：Electron 走原生桥，Android 走 Capacitor 插件。已构建出可侧载的 APK：
 
 ```
-release/MoRead-Android-1.1.0.apk
+release/MoRead-Android-1.2.0.apk
 ```
 
 ### 构建要求
