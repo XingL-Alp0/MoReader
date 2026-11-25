@@ -57,6 +57,7 @@ plugins/
 | `icon` | **是**（安装包时） | 图标文件相对路径；支持 SVG / PNG / JPEG / WebP；也可用 `iconFile` 字段 |
 | `description` | 否 | 插件说明 |
 | `entry` | 否 | 入口脚本，默认 `index.js` |
+| `renderer` | 否 | 渲染层界面脚本（可选），见 §3「界面脚本」 |
 | `permissions` | 否 | 声明的权限列表（仅声明，不拦截） |
 | `resources` | 否 | 自带图片/字体等资源 |
 | `elements` | 否 | Markdown 自定义元素 |
@@ -98,6 +99,28 @@ module.exports = {
 - 两端的这层限制都只防误用，**不是安全边界**：插件能接触主机/页面能力，只应启用可信插件。
 
 `permissions` 只是声明字段，会出现在元数据里，运行时不会按权限拦截。
+
+### 界面脚本（renderer，可选）
+
+`plugin.json` 可以再声明 `renderer`，指向在**渲染层**自动执行的界面脚本（≤512 KB）：
+
+```json
+{
+  "id": "moread-en",
+  "name": "English UI",
+  "icon": "assets/icon.svg",
+  "entry": "index.js",
+  "renderer": "ui.js"
+}
+```
+
+- 时机：插件启用后，应用启动、重新扫描或重新启用时执行；停用/卸载时调用脚本导出的 `deactivate()`
+- 参数：`module` / `exports` / `plugin`（`id`、`metadata`、`log`）/ `app` / `markdown`；脚本直接运行在窗口上下文里，可以访问 `document`、`window`、`localStorage`
+- 用途：界面级扩展，例如语言切换、界面装饰、监听应用渲染出的 DOM
+- 与入口脚本一样**不做沙箱**：脚本与应用同权限，只启用可信来源；`renderer` 缺失或超过 512 KB 时安装会被拒绝
+- Android 同样支持（在渲染层执行，没有 `require`）
+
+示例：`plugins/moread-en/` 用 `ui.js` 把界面翻译成英文，并提供切回中文的菜单命令。
 
 ## 4. Markdown 自定义元素
 

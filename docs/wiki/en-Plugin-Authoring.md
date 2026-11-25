@@ -57,6 +57,7 @@ Minimal manifest:
 | `icon` | **yes** (for zip installs) | Relative path to an icon file; SVG / PNG / JPEG / WebP; `iconFile` is an alternative |
 | `description` | no | Short description |
 | `entry` | no | Entry script, defaults to `index.js` |
+| `renderer` | no | Optional renderer-side UI script, see §3 “Renderer script” |
 | `permissions` | no | Declared permissions (declarative only) |
 | `resources` | no | Bundled images/fonts |
 | `elements` | no | Custom Markdown elements |
@@ -98,6 +99,28 @@ Execution environment:
 - On both platforms these limits guard against mistakes, **not against malice**. Plugins run with host/page privileges; only enable plugins you trust.
 
 `permissions` is declared metadata only; nothing is enforced at runtime.
+
+### Renderer script (optional)
+
+`plugin.json` may declare `renderer`, a UI script that runs automatically in the **renderer** (max 512 KB):
+
+```json
+{
+  "id": "moread-en",
+  "name": "English UI",
+  "icon": "assets/icon.svg",
+  "entry": "index.js",
+  "renderer": "ui.js"
+}
+```
+
+- When: after the plugin is enabled, and on every app start, rescan or re-enable; `deactivate()` is called when the plugin is disabled or uninstalled
+- Arguments: `module` / `exports` / `plugin` (`id`, `metadata`, `log`) / `app` / `markdown`; the script runs in the window context and can use `document`, `window` and `localStorage`
+- Use it for UI-level extensions such as language switching, decoration, or observing DOM the app renders
+- Like the entry script, it is **not sandboxed**: same privileges as the app, so only enable trusted sources; installs are rejected when `renderer` is missing or bigger than 512 KB
+- Android supports it too (runs in the renderer, no `require`)
+
+Sample: `plugins/moread-en/` uses `ui.js` to translate the interface into English and ships menu commands to switch back.
 
 ## 4. Custom Markdown elements
 

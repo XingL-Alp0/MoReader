@@ -29,6 +29,7 @@
 | [`../plugins/moread-sample/README.md`](../plugins/moread-sample/README.md) | 示例插件（提示卡）：用法、定制与安全说明 | 示例插件变化时更新 |
 | [`../plugins/moread-dividers/README.md`](../plugins/moread-dividers/README.md) | 示例插件（更多分割线）：用法、资源引用演示 | 示例插件变化时更新 |
 | [`../plugins/moread-office/README.md`](../plugins/moread-office/README.md) | 示例插件（办公格式工具）：Word 导入、PDF 导出、双端说明 | 示例插件变化时更新 |
+| [`../plugins/moread-en/README.md`](../plugins/moread-en/README.md) | 示例插件（English UI）：渲染层 `renderer` 脚本、界面翻译与中英切换 | 示例插件变化时更新 |
 | [`wiki/README.md`](wiki/README.md) | 面向 GitHub Wiki 的中英双语页面（介绍 / 使用指南 / 主题包 / 插件）与上传说明 | 四份指南变化时同步中英两版 |
 | [`../IMPLEMENTATION_NOTES.md`](../IMPLEMENTATION_NOTES.md) | 按轮次的变更记录（最新在最后）；只记「这轮改了什么」，不承担事实说明 | 每轮开发追加 |
 

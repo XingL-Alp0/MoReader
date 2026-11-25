@@ -265,3 +265,16 @@
 - 校验：`tmp/check-wiki-links.js`（链接、代码围栏、语言切换、中英配对）与 `tmp/check-wiki-parity.js`（H2/H3/围栏/表格数量一致）通过；`npm run build`、`npm test` 通过。
 - 导航：`README.md`、`docs/README.md` 增加 wiki 入口与维护说明；源文档 `插件制作指导.md` 的 `placement` 描述同步修正。
 
+## 渲染层插件脚本与 English UI 插件（en.zip）
+
+- 插件系统新增 `plugin.json` → `renderer`（相对 `.js`，≤512 KB）：桌面由 `plugins:renderer-source` IPC 读取、Android 由宿主 `rendererSource()` 返回，渲染层 `syncPluginRenderers()` 在 `applyPlugins()` 后按启用状态执行一次（`new Function` 注入 `module/exports/plugin/app/markdown`，与应用同权限、无沙箱），停用/卸载调用 `deactivate()` 并清理。安装时校验 `renderer` 文件存在与大小；`src/shared/plugin-manifest.js` 统一校验规则。
+- 新示例插件 `plugins/moread-en/`（English UI，v1.0.0）：`ui.js` 用 `DICT` + 正则 `PATTERNS` + `MutationObserver` 翻译界面，原文保存在内存里，切回中文或停用插件时恢复；`localStorage.moread.lang` 记录选择。内置副本不自动切换（避免影响现有用户），从 zip 安装（`source: "user"`）首次启用自动进入英文；两个菜单命令 `English interface` / `切换为中文` 放在「更多 → 工具」。
+- 打包：`npm run pack:plugin -- plugins/moread-en` → `release/moread-en-1.0.0.zip`，并复制为 `release/en.zip`。
+- 附带修复：插件详情行标签列从 44px 调到 84px，避免英文长标签（Commands / Permissions）与值重叠。
+- 验证：
+  - `npm test`、`npm run build` 通过；`scripts/test-plugins.js` 增加 `renderer` 归一化与缺文件安装拒绝，`scripts/test-plugin-host.js` 增加 `rendererSource` 与缺界面脚本拒绝。
+  - Android harness（416px）：zip 安装后自动英文，设置标题/工具栏/插件卡片/详情/侧栏/更多菜单/状态栏均为英文；切回中文后侧栏与设置立即恢复；切回英文正常；`Page.reload` 后仍为英文；停用插件恢复中文，重新启用恢复英文。截图：`tmp/shot-en-settings.png`、`tmp/shot-en-sidebar.png`。
+  - 桌面隔离实例（`--user-data-dir=tmp\en-desktop-profile`）：内置 `moread-en` 保持中文（避免默认改语言），卡片显示 2 个命令；执行 `English interface` 后侧栏英文，再执行 `切换为中文` 恢复中文。
+  - 已知覆盖：文档正文、文件名、笔记名、应用内指南不翻译；主题包库、公式/Mermaid 编辑器里的部分长帮助文字仍可能为中文。
+
+
