@@ -19,6 +19,7 @@ const COMMAND_GROUPS = new Set(['import', 'export', 'tools']);
 
 const MAX_MANIFEST_BYTES = 128 * 1024;
 const MAX_ENTRY_BYTES = 2 * 1024 * 1024;
+const MAX_RENDERER_BYTES = 512 * 1024;
 const MAX_RESOURCE_BYTES = 8 * 1024 * 1024;
 const MAX_ICON_BYTES = 512 * 1024;
 const MAX_ZIP_BYTES = 32 * 1024 * 1024;
@@ -115,6 +116,13 @@ function normalizeManifest(raw, dir) {
   if (!raw || typeof raw !== 'object' || !ID_RE.test(raw.id || '')) throw new Error('Invalid plugin id');
   const entry = typeof raw.entry === 'string' ? raw.entry : 'index.js';
   if (entry.startsWith('/') || entry.includes('..') || !/^[\w./-]+\.js$/.test(entry)) throw new Error('Invalid plugin entry');
+  let renderer = '';
+  if (raw.renderer !== undefined) {
+    renderer = typeof raw.renderer === 'string' ? raw.renderer.trim().replace(/\\/g, '/') : '';
+    if (!renderer || renderer.startsWith('/') || renderer.includes('..') || !/^[\w./-]+\.js$/.test(renderer) || !isSafeRelativePath(renderer)) {
+      throw new Error('Invalid plugin renderer');
+    }
+  }
   return Object.freeze({
     id: raw.id,
     dir,
@@ -125,6 +133,7 @@ function normalizeManifest(raw, dir) {
     icon: normalizeIconGlyph(raw),
     iconFile: normalizeIconFile(raw),
     entry,
+    renderer,
     permissions: Array.isArray(raw.permissions) ? raw.permissions.filter((p) => typeof p === 'string').slice(0, 32) : [],
     elements: Array.isArray(raw.elements) ? raw.elements.filter((item) => item && typeof item === 'object').slice(0, 64).map((item) => ({
       name: String(item.name || '').trim().toLowerCase(),
@@ -162,6 +171,7 @@ module.exports = {
   COMMAND_GROUPS,
   MAX_MANIFEST_BYTES,
   MAX_ENTRY_BYTES,
+  MAX_RENDERER_BYTES,
   MAX_RESOURCE_BYTES,
   MAX_ICON_BYTES,
   MAX_ZIP_BYTES,

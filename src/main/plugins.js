@@ -12,6 +12,7 @@ const {
   ID_RE,
   MAX_MANIFEST_BYTES,
   MAX_ENTRY_BYTES,
+  MAX_RENDERER_BYTES,
   MAX_RESOURCE_BYTES,
   MAX_ICON_BYTES,
   MAX_ZIP_BYTES,
@@ -249,6 +250,24 @@ class PluginManager {
   }
 
   /**
+   * Source of the optional renderer script (`plugin.json` → `renderer`). The
+   * renderer executes it after startup; the main process only reads the file.
+   */
+  async rendererSource(id) {
+    const manifest = this.plugins.get(id);
+    if (!manifest?.renderer) return '';
+    const file = safeResolve(manifest.dir, manifest.renderer);
+    if (!file || !isInside(manifest.dir, file)) return '';
+    try {
+      const stat = await fs.stat(file);
+      if (!stat.isFile() || stat.size > MAX_RENDERER_BYTES) return '';
+      return await fs.readFile(file, 'utf8');
+    } catch {
+      return '';
+    }
+  }
+
+  /**
    * Install a plugin from a .zip. The archive must contain exactly one
    * `plugin.json` at its root or inside a single top-level folder.
    */
@@ -311,6 +330,12 @@ class PluginManager {
       const entryFile = safeResolve(staging, manifest.entry);
       if (!entryFile || !fsSync.statSync(entryFile, { throwIfNoEntry: false })?.isFile()) {
         throw new Error(`插件缺少入口文件 ${manifest.entry}`);
+      }
+      if (manifest.renderer) {
+        const rendererFile = safeResolve(staging, manifest.renderer);
+        const rendererStat = rendererFile ? fsSync.statSync(rendererFile, { throwIfNoEntry: false }) : null;
+        if (!rendererStat?.isFile()) throw new Error(`插件缺少界面脚本 ${manifest.renderer}`);
+        if (rendererStat.size > MAX_RENDERER_BYTES) throw new Error('插件界面脚本超过 512 KB');
       }
       const backup = fsSync.existsSync(dest) ? `${dest}.old-${Date.now().toString(36)}` : '';
       if (backup) await fs.rename(dest, backup);

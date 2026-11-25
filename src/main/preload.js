@@ -26,6 +26,7 @@ contextBridge.exposeInMainWorld('moread', {
   plugins: {
     list: () => ipcRenderer.invoke('plugins:list'),
     reload: () => ipcRenderer.invoke('plugins:reload'),
+    rendererSource: (id) => ipcRenderer.invoke('plugins:renderer-source', id),
     setEnabled: (id, enabled) => ipcRenderer.invoke('plugins:set-enabled', id, enabled),
     install: (payload) => ipcRenderer.invoke('plugins:install', payload),
     uninstall: (id) => ipcRenderer.invoke('plugins:uninstall', id),

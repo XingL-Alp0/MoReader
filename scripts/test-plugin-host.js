@@ -248,6 +248,35 @@ async function main() {
   await logsHost.install();
   assert.ok(logs.some((line) => line.includes('alpha-active')), `logs: ${logs.join(' | ')}`);
 
+  // 9. renderer scripts: source is exposed to the app, missing file rejects install
+  const uiBridge = createFakeBridge();
+  const uiHost = makeHost(uiBridge).host;
+  await dropIn(
+    uiBridge,
+    zipSync({
+      'plugin.json': strToU8(
+        JSON.stringify(pluginManifest({ id: 'uiplugin', renderer: 'ui.js', resources: {} }))
+      ),
+      'index.js': strToU8('module.exports = {};'),
+      'ui.js': strToU8('module.exports = { activate() {} };'),
+      'assets/icon.svg': strToU8('<svg/>')
+    })
+  );
+  assert.equal((await uiHost.install()).installed, true);
+  assert.match(await uiHost.rendererSource('uiplugin'), /activate/);
+
+  await dropIn(
+    uiBridge,
+    zipSync({
+      'plugin.json': strToU8(
+        JSON.stringify(pluginManifest({ id: 'noui', renderer: 'ui.js', resources: {} }))
+      ),
+      'index.js': strToU8('module.exports = {};'),
+      'assets/icon.svg': strToU8('<svg/>')
+    })
+  );
+  await assert.rejects(() => uiHost.install(), /缺少界面脚本/);
+
   fs.rmSync(outfile, { force: true });
   console.log('android plugin host tests passed');
 }

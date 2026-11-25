@@ -344,6 +344,10 @@ function registerIpc() {
   }
 
   ipcMain.handle('plugins:list', () => pluginManager ? pluginManager.list() : []);
+  ipcMain.handle('plugins:renderer-source', async (_event, id) => {
+    if (!pluginManager || typeof id !== 'string') return '';
+    return pluginManager.rendererSource(id);
+  });
   ipcMain.handle('plugins:reload', async () => {
     if (!pluginManager) return [];
     return pluginManager.refresh();

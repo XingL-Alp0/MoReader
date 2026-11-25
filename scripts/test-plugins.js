@@ -228,6 +228,17 @@ async function main() {
   );
   await assert.rejects(() => manager.installFromZip(hugeIconPath), /超过 512 KB/);
 
+  const missingRendererPath = path.join(root, 'missing-renderer.zip');
+  await fsp.writeFile(
+    missingRendererPath,
+    makeZip([
+      ['plugin.json', JSON.stringify({ id: 'rendererless', name: 'No renderer', version: '1.0.0', entry: 'index.js', icon: 'assets/icon.svg', renderer: 'ui.js' })],
+      ['index.js', 'module.exports = {};'],
+      ['assets/icon.svg', '<svg xmlns="http://www.w3.org/2000/svg"/>']
+    ])
+  );
+  await assert.rejects(() => manager.installFromZip(missingRendererPath), /缺少界面脚本/);
+
   // 9. uninstall only works for user plugins
   await assert.rejects(() => manager.uninstall('broken'), /内置插件不能卸载/);
   const removed = await manager.uninstall('beta');
@@ -270,6 +281,11 @@ async function main() {
   assert.equal(objectIcon.iconFile, 'assets/icon.webp');
   const badIcon = normalizeManifest({ id: 'ok', icon: '../escape.svg' }, path.join(root, 'ok'));
   assert.equal(badIcon.iconFile, '');
+  const rendererManifest = normalizeManifest({ id: 'ok', renderer: 'ui.js' }, path.join(root, 'ok'));
+  assert.equal(rendererManifest.renderer, 'ui.js');
+  const noRenderer = normalizeManifest({ id: 'ok' }, path.join(root, 'ok'));
+  assert.equal(noRenderer.renderer, '');
+  assert.throws(() => normalizeManifest({ id: 'ok', renderer: '../ui.js' }, path.join(root, 'ok')), /Invalid plugin renderer/);
   assert.equal(normalized.elements[0].name, 'note');
   assert.equal(normalized.elements[0].fields.length, 2);
   assert.deepEqual(normalized.elements[0].fields[1].options, [

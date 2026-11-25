@@ -21,6 +21,7 @@ const {
   ID_RE,
   MAX_MANIFEST_BYTES,
   MAX_ENTRY_BYTES,
+  MAX_RENDERER_BYTES,
   MAX_RESOURCE_BYTES,
   MAX_ICON_BYTES,
   MAX_ZIP_BYTES,
@@ -405,6 +406,11 @@ export function createAndroidPluginHost({
     if (!iconEntry) throw new Error(`插件图标文件不存在：${manifest.iconFile}`);
     if (iconEntry.length > MAX_ICON_BYTES) throw new Error(`插件图标文件超过 512 KB：${manifest.iconFile}`);
     if (!entries[`${prefix}${manifest.entry}`]) throw new Error(`插件缺少入口文件 ${manifest.entry}`);
+    if (manifest.renderer) {
+      const rendererEntry = entries[`${prefix}${manifest.renderer}`];
+      if (!rendererEntry) throw new Error(`插件缺少界面脚本 ${manifest.renderer}`);
+      if (rendererEntry.length > MAX_RENDERER_BYTES) throw new Error('插件界面脚本超过 512 KB');
+    }
 
     const relative = new Map();
     for (const name of names) {
@@ -462,5 +468,19 @@ export function createAndroidPluginHost({
     throw new Error("Android 版插件保存在应用私有目录，无法用文件管理器打开");
   }
 
-  return { list, reload, setEnabled, install, uninstall, openFolder, ready };
+  /* Optional UI script (`plugin.json` → `renderer`): the app executes it after
+     startup, exactly like the desktop `plugins:renderer-source` bridge. */
+  async function rendererSource(id) {
+    await ready();
+    const plugin = plugins.get(id);
+    if (!plugin?.renderer) return "";
+    try {
+      const source = await readText(`${plugin.dir}/${plugin.renderer}`);
+      return source.length > MAX_RENDERER_BYTES ? "" : source;
+    } catch {
+      return "";
+    }
+  }
+
+  return { list, reload, setEnabled, install, uninstall, openFolder, rendererSource, ready };
 }

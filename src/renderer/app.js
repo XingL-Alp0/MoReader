@@ -397,6 +397,7 @@ const state = {
   pluginQuery: "",
   pluginFilter: "all",
   pluginDetails: new Set(),
+  pluginRenderers: new Map(),
   pluginElementDisposers: new Map()
 };
 
@@ -7720,6 +7721,68 @@ function applyPlugins(plugins) {
   syncPluginButtons();
   renderPluginCommands();
   renderPluginList();
+  syncPluginRenderers().catch((error) => console.warn("Plugin renderer sync failed", error));
+}
+
+/* Optional renderer scripts (`plugin.json` → `renderer`) run once per enabled
+   plugin. They share the window with the app (no sandbox), like entry scripts. */
+async function deactivatePluginRenderer(id) {
+  const entry = state.pluginRenderers.get(id);
+  if (!entry) return;
+  state.pluginRenderers.delete(id);
+  try {
+    if (typeof entry.dispose === "function") await entry.dispose();
+  } catch (error) {
+    console.warn(`Plugin renderer cleanup failed: ${id}`, error);
+  }
+}
+
+async function activatePluginRenderer(plugin) {
+  if (!plugin?.renderer || typeof api.plugins?.rendererSource !== "function") return;
+  if (state.pluginRenderers.has(plugin.id)) return;
+  let source = "";
+  try {
+    source = await api.plugins.rendererSource(plugin.id);
+  } catch {
+    return;
+  }
+  if (!source) return;
+  try {
+    const module = { exports: {} };
+    const pluginApi = Object.freeze({
+      id: plugin.id,
+      metadata: plugin,
+      log: (...args) => console.log(`[plugin:${plugin.id}]`, ...args)
+    });
+    const factory = new Function(
+      "module",
+      "exports",
+      "plugin",
+      "app",
+      "markdown",
+      `"use strict";\n${source}\n;return module.exports;`
+    );
+    const exported = factory(module, module.exports, pluginApi, scriptApi, scriptApi);
+    const instance =
+      exported && typeof exported.activate === "function"
+        ? await exported.activate({ ...pluginApi, app: scriptApi })
+        : exported;
+    state.pluginRenderers.set(plugin.id, { instance, dispose: exported?.deactivate });
+  } catch (error) {
+    console.warn(`Plugin renderer failed: ${plugin.id}`, error);
+  }
+}
+
+async function syncPluginRenderers() {
+  const wanted = new Map(
+    (state.plugins || []).filter((plugin) => plugin.enabled && plugin.renderer).map((plugin) => [plugin.id, plugin])
+  );
+  for (const id of [...state.pluginRenderers.keys()]) {
+    if (!wanted.has(id)) await deactivatePluginRenderer(id);
+  }
+  for (const [id, plugin] of wanted) {
+    if (!state.pluginRenderers.has(id)) await activatePluginRenderer(plugin);
+  }
 }
 
 const PLUGIN_FIELD_LABELS = {
